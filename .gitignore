@@ -128,4 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Jetbrains/IntelliJ
+.idea/
+
 .vscode
