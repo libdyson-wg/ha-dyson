@@ -12,6 +12,31 @@ This is a HA custom integration for dyson. There are several main differences be
 
 My goal is to make this integration official. However, at the current stage, I don't want to do the changes in core since there could be a lot of breaking changes. Therefore, I'll do be merge when everything seems stable.
 
+## Migration from shenxn/ha-dyson
+
+If you used the original repository from shenxn, you can migrate fairly easily:
+
+### Experimental no-reconfiguration migration
+
+I haven't tested this method very much, but in my experiments it seems possible to switch over with zero impact to your current integration configuration, entities/devices, or dashboards. I don't know what side-effects it may have though (leftover old config data might start causing issues or something - no guarantees).
+
+1. Remove the ha-dyson and ha-dyson-cloud custom repositories from HACS
+    - _Without_ removing the integrations themselves.
+3. Add the new [ha-dyson](https://github.com/libdyson-wg/ha-dyson) and [ha-dyson-cloud](https://github.com/libdyson-wg/ha-dyson-cloud) custom repositories 
+    - The ha-dyson-cloud repository is only necessary if you already use it, or are intending to use its features. It is not required, but currently, it makes setting up new devices like HP07 (527K) much simpler.
+4. Update the ha-dyson and ha-dyson-cloud repositories using the HACS updater
+
+### Proven some-reconfiguration migration
+
+This is proven to work without any side effects. If you used the default IDs for the entities and devices, then you'll just need to re-configure the devices but your dashboards will not need updating.
+
+1. Remove the Dyson Local and Dyson Cloud _integrations_ from your /config/integrations page.
+1. Remove the Dyson Local and Dyson Cloud _integrations_ from your /hacs/integrations page.
+2. Remove the dyson-ha and dyson-ha-cloud custom repositories from HACS
+3. Add the new [dyson-ha](https://github.com/libdyson-wg/ha-dyson) and [dyson-ha-cloud](https://github.com/libdyson-wg/ha-dyson-cloud) custom repositories 
+    - The libdyson-ha-cloud repository is only necessary if you already use it, or are intending to use its features. It is not required, but currently, it makes setting up new devices like HP07 (527K) much simpler.
+4. Update the dyson-ha and dyson-ha-cloud repositories
+
 ## Important note regarding connection via Dyson Link
 
 If you use your Dyson Link account to connect to the integration, you may or may not encounter a `libdyson.exceptions.DysonInvalidAuth` error. In this case, try disconnecting from the mobile app first, it should clear the error. Sometimes, you just need to try multiple times. If you discover a workaround for this issue please open a pull request.
