@@ -4,13 +4,8 @@ This custom integration is still under development.
 
 This is a HA custom integration for dyson. There are several main differences between this custom integration and the official dyson integration:
 
-- It does not rely on dyson account. Which means once configured, the integration will no longer login to the Dyson cloud service so fast and more reliable start up process.
-
+- It does not rely on a dyson account. Which means once configured, the integration will no longer login to the Dyson cloud service so fast and more reliable start up process.
 - Config flow and discovery is supported, so easier configuration.
-
-- Based on a new library that is better structured so the code in the integration itself is simplified.
-
-My goal is to make this integration official. However, at the current stage, I don't want to do the changes in core since there could be a lot of breaking changes. Therefore, I'll do be merge when everything seems stable.
 
 ## Migration from shenxn/ha-dyson
 
@@ -18,7 +13,7 @@ If you used the original repository from shenxn, you can migrate fairly easily:
 
 ### Experimental no-reconfiguration migration
 
-I haven't tested this method very much, but in my experiments it seems possible to switch over with zero impact to your current integration configuration, entities/devices, or dashboards. I don't know what side-effects it may have though (leftover old config data might start causing issues or something - no guarantees).
+ This is less proven, but it is possible to switch over with zero impact to your current integration configuration, entities/devices, or dashboards. I don't know what side-effects it may have though (leftover old config data might start causing issues or something - no guarantees).
 
 1. Remove the ha-dyson and ha-dyson-cloud custom repositories from HACS
     - _Without_ removing the integrations themselves.
@@ -36,10 +31,6 @@ This is proven to work without any side effects. If you used the default IDs for
 3. Add the new [dyson-ha](https://github.com/libdyson-wg/ha-dyson) and [dyson-ha-cloud](https://github.com/libdyson-wg/ha-dyson-cloud) custom repositories 
     - The libdyson-ha-cloud repository is only necessary if you already use it, or are intending to use its features. It is not required, but currently, it makes setting up new devices like HP07 (527K) much simpler.
 4. Update the dyson-ha and dyson-ha-cloud repositories
-
-## Important note regarding connection via Dyson Link
-
-If you use your Dyson Link account to connect to the integration, you may or may not encounter a `libdyson.exceptions.DysonInvalidAuth` error. In this case, try disconnecting from the mobile app first, it should clear the error. Sometimes, you just need to try multiple times. If you discover a workaround for this issue please open a pull request.
 
 ## Installation
 
@@ -64,6 +55,7 @@ Dyson Local uses MQTT-based protocol to communicate with local Dyson devices usi
 - Dyson Pure Cool Link
 - Dyson Pure Cool Link Desk
 - Dyson Pure Hot+Cool
+- Dyson Purifier Hot+Cool
 - Dyson Pure Hot+Cool Link
 - Dyson Pure Humidity+Cool
 
