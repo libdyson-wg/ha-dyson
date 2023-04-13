@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from libdyson import DEVICE_TYPE_PURE_HUMIDIFY_COOL, DysonPureHumidifyCool, MessageType
+from libdyson import DEVICE_TYPE_PURE_HUMIDIFY_COOL, DysonPurifierHumidifyCool, MessageType
 from libdyson.const import AirQualityTarget
 import pytest
 
@@ -40,9 +40,9 @@ ENTITY_ID = f"humidifier.{NAME}"
 
 
 @pytest.fixture
-def device() -> DysonPureHumidifyCool:
+def device() -> DysonPurifierHumidifyCool:
     """Return mocked device."""
-    device = get_base_device(DysonPureHumidifyCool, DEVICE_TYPE_PURE_HUMIDIFY_COOL)
+    device = get_base_device(DysonPurifierHumidifyCool, DEVICE_TYPE_PURE_HUMIDIFY_COOL)
     device.is_on = True
     device.speed = 5
     device.auto_mode = False
@@ -55,7 +55,7 @@ def device() -> DysonPureHumidifyCool:
         yield device
 
 
-async def test_state(hass: HomeAssistant, device: DysonPureHumidifyCool):
+async def test_state(hass: HomeAssistant, device: DysonPurifierHumidifyCool):
     """Test entity state and attributes."""
     state = hass.states.get(ENTITY_ID)
     assert state.state == STATE_ON
@@ -105,7 +105,7 @@ async def test_state(hass: HomeAssistant, device: DysonPureHumidifyCool):
 )
 async def test_command(
     hass: HomeAssistant,
-    device: DysonPureHumidifyCool,
+    device: DysonPurifierHumidifyCool,
     service: str,
     service_data: dict,
     command: str,

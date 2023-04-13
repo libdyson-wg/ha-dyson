@@ -7,10 +7,11 @@ from libdyson import (
     Dyson360Heurist,
     DysonDevice,
     DysonPureCoolLink,
-    DysonPureHumidifyCool,
-    DysonPurifierHumidifyCoolFormaldehyde,
+    DysonPurifierHumidifyCool,
 )
+
 from libdyson.const import MessageType
+from libdyson.dyson_device import DysonFanDevice
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -48,6 +49,7 @@ async def async_setup_entry(
             DysonTemperatureSensor(coordinator, device, name),
             DysonVOCSensor(coordinator, device, name),
         ]
+
         if isinstance(device, DysonPureCoolLink):
             entities.extend(
                 [
@@ -55,7 +57,7 @@ async def async_setup_entry(
                     DysonParticulatesSensor(coordinator, device, name),
                 ]
             )
-        else:  # DysonPureCool or DysonPureHumidifyCool
+        else:  # DysonPureCool or DysonPurifierHumidifyCool
             entities.extend(
                 [
                     DysonPM25Sensor(coordinator, device, name),
@@ -72,10 +74,9 @@ async def async_setup_entry(
                         DysonHEPAFilterLifeSensor(device, name),
                     ]
                 )
-        if isinstance(device, DysonPureHumidifyCool) or isinstance(
-            device, DysonPurifierHumidifyCoolFormaldehyde):
+        if isinstance(device, DysonPurifierHumidifyCool):
             entities.append(DysonNextDeepCleanSensor(device, name))
-        if isinstance(device, DysonPurifierHumidifyCoolFormaldehyde):
+        if hasattr(device, "formaldehyde") and device.formaldehyde is not None:
             entities.append(DysonHCHOSensor(coordinator, device, name))
     async_add_entities(entities)
 
