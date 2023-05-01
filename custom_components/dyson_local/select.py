@@ -5,8 +5,7 @@ from typing import Callable
 from libdyson import (
     DysonPureCoolLink,
     DysonPureHotCoolLink,
-    DysonPureHumidifyCool,
-    DysonPurifierHumidifyCoolFormaldehyde,
+    DysonPurifierHumidifyCool,
     HumidifyOscillationMode,
     WaterHardness,
 )
@@ -66,8 +65,7 @@ async def async_setup_entry(
         device, DysonPureCoolLink
     ):
         entities.append(DysonAirQualitySelect(device, name))
-    if isinstance(device, DysonPureHumidifyCool) or isinstance(
-        device, DysonPurifierHumidifyCoolFormaldehyde):
+    if isinstance(device, DysonPurifierHumidifyCool):
         entities.extend(
             [
                 DysonOscillationModeSelect(device, name),

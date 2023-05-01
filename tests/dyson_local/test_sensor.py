@@ -13,7 +13,7 @@ from libdyson import (
     Dyson360Heurist,
     DysonPureCool,
     DysonPureCoolLink,
-    DysonPureHumidifyCool,
+    DysonPurifierHumidifyCool,
 )
 from libdyson.const import ENVIRONMENTAL_OFF, MessageType
 from libdyson.dyson_device import DysonDevice, DysonFanDevice
@@ -67,8 +67,8 @@ def _get_pure_cool_seperated() -> DysonPureCool:
     return device
 
 
-def _get_pure_humidify_cool() -> DysonPureHumidifyCool:
-    device = _get_fan(DysonPureHumidifyCool, DEVICE_TYPE_PURE_HUMIDIFY_COOL)
+def _get_pure_humidify_cool() -> DysonPurifierHumidifyCool:
+    device = _get_fan(DysonPurifierHumidifyCool, DEVICE_TYPE_PURE_HUMIDIFY_COOL)
     device.carbon_filter_life = None
     device.hepa_filter_life = 50
     device.time_until_next_clean = 1800
@@ -178,7 +178,7 @@ async def test_pure_cool_seperated(hass: HomeAssistant, device: DysonFanDevice):
 
 
 @pytest.mark.parametrize("device", [_get_pure_humidify_cool], indirect=True)
-async def test_pure_humidify_cool(hass: HomeAssistant, device: DysonPureHumidifyCool):
+async def test_pure_humidify_cool(hass: HomeAssistant, device: DysonPurifierHumidifyCool):
     """Test Pure Humidify+Cool sensors."""
     assert hass.states.get(f"sensor.{NAME}_next_deep_clean").state == "1800"
     device.time_until_next_clean = 1500
