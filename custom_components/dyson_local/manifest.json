@@ -6,7 +6,7 @@
     "issue_tracker": "https://github.com/libdyson-wg/ha-dyson/issues",
     "dependencies": ["zeroconf"],
     "codeowners": ["@libdyson-wg"],
-    "requirements": ["libdyson-neon==1.0.1"],
+    "requirements": ["libdyson-neon==1.0.2"],
     "version": "0.18.1",
     "iot_class": "local_polling"
 }
