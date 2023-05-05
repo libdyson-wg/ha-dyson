@@ -281,10 +281,9 @@ class DysonPM10Sensor(DysonSensorEnvironmental):
 
 class DysonParticulatesSensor(DysonSensorEnvironmental):
     """Dyson sensor for particulate matters for "Link" devices."""
-
-    _SENSOR_TYPE = "pm1"
-    _SENSOR_NAME = "Air Quality"
-    _attr_device_class = SensorDeviceClass.PM1
+    _SENSOR_TYPE = "aqi"
+    _SENSOR_NAME = "Air Quality Index"
+    _attr_device_class = SensorDeviceClass.AQI
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     @environmental_property
@@ -296,9 +295,9 @@ class DysonParticulatesSensor(DysonSensorEnvironmental):
 class DysonVOCSensor(DysonSensorEnvironmental):
     """Dyson sensor for volatile organic compounds."""
 
-    _SENSOR_TYPE = "voc"
-    _SENSOR_NAME = "Volatile Organic Compounds"
-    _attr_device_class = SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS
+    _SENSOR_TYPE = "voc-index"
+    _SENSOR_NAME = "Volatile Organic Compounds Index"
+    _attr_device_class = SensorDeviceClass.AQI
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     @environmental_property
@@ -310,9 +309,9 @@ class DysonVOCSensor(DysonSensorEnvironmental):
 class DysonNO2Sensor(DysonSensorEnvironmental):
     """Dyson sensor for Nitrogen Dioxide."""
 
-    _SENSOR_TYPE = "no2"
-    _SENSOR_NAME = "Nitrogen Dioxide"
-    _attr_device_class = SensorDeviceClass.NITROGEN_DIOXIDE
+    _SENSOR_TYPE = "no2-index"
+    _SENSOR_NAME = "Nitrogen Dioxide Index"
+    _attr_device_class = SensorDeviceClass.AQI
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     @environmental_property
