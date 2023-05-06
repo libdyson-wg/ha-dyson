@@ -332,4 +332,4 @@ class DysonHCHOSensor(DysonSensorEnvironmental):
     @environmental_property
     def native_value(self) -> float:
         """Return the state of the sensor."""
-        return self._device.nitrogen_dioxide
+        return self._device.formaldehyde
