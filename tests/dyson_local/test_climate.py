@@ -2,15 +2,15 @@
 
 from unittest.mock import patch
 
-from libdyson import (
+from .vendor.libdyson import (
     DEVICE_TYPE_PURE_HOT_COOL,
     DEVICE_TYPE_PURE_HOT_COOL_LINK,
     DysonPureHotCool,
     DysonPureHotCoolLink,
     MessageType,
 )
-from libdyson.const import ENVIRONMENTAL_INIT
-from libdyson.dyson_device import DysonHeatingDevice
+from .vendor.libdyson.const import ENVIRONMENTAL_INIT
+from .vendor.libdyson.dyson_device import DysonHeatingDevice
 import pytest
 
 from custom_components.dyson_local.climate import HVAC_MODES, SUPPORT_FLAGS

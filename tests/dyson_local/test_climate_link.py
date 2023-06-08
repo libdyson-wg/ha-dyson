@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from libdyson import DEVICE_TYPE_PURE_HOT_COOL_LINK, DysonPureHotCoolLink, MessageType
+from .vendor.libdyson import DEVICE_TYPE_PURE_HOT_COOL_LINK, DysonPureHotCoolLink, MessageType
 import pytest
 
 from custom_components.dyson_local.climate import FAN_MODES, SUPPORT_FLAGS_LINK

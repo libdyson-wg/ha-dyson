@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from libdyson import DEVICE_TYPE_PURE_COOL, DysonPureCool
-from libdyson.const import MessageType
+from .vendor.libdyson import DEVICE_TYPE_PURE_COOL, DysonPureCool
+from .vendor.libdyson.const import MessageType
 import pytest
 
 from custom_components.dyson_local import DOMAIN

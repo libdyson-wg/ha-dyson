@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from libdyson import (
+from .vendor.libdyson import (
     DEVICE_TYPE_360_EYE,
     Dyson360Eye,
     MessageType,

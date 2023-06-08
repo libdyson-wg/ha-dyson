@@ -2,7 +2,7 @@
 
 from typing import Callable
 
-from libdyson import Dyson360Eye, Dyson360Heurist, DysonPureHotCoolLink
+from .vendor.libdyson import Dyson360Eye, Dyson360Heurist, DysonPureHotCoolLink
 
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_BATTERY_CHARGING,

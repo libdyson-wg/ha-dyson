@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from libdyson import (
+from .vendor.libdyson import (
     DEVICE_TYPE_360_EYE,
     DEVICE_TYPE_360_HEURIST,
     Dyson360Eye,
@@ -12,7 +12,7 @@ from libdyson import (
     VacuumHeuristPowerMode,
     VacuumState,
 )
-from libdyson.dyson_vacuum_device import DysonVacuumDevice
+from .vendor.libdyson.dyson_vacuum_device import DysonVacuumDevice
 import pytest
 
 from custom_components.dyson_local.vacuum import ATTR_POSITION, SUPPORTED_FEATURES

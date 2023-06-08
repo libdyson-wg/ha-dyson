@@ -2,9 +2,9 @@
 
 from unittest.mock import patch
 
-from libdyson import DEVICE_TYPE_PURE_COOL, DysonPureCool, DysonPureCoolLink
-from libdyson.const import DEVICE_TYPE_PURE_COOL_LINK, AirQualityTarget, MessageType
-from libdyson.dyson_device import DysonFanDevice
+from .vendor.libdyson import DEVICE_TYPE_PURE_COOL, DysonPureCool, DysonPureCoolLink
+from .vendor.libdyson.const import DEVICE_TYPE_PURE_COOL_LINK, AirQualityTarget, MessageType
+from .vendor.libdyson.dyson_device import DysonFanDevice
 import pytest
 
 from custom_components.dyson_local import DOMAIN
