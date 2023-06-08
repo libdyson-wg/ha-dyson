@@ -3,7 +3,7 @@
 from typing import List, Type
 from unittest.mock import patch
 
-from libdyson import (
+from .vendor.libdyson import (
     DEVICE_TYPE_360_EYE,
     DEVICE_TYPE_360_HEURIST,
     DEVICE_TYPE_PURE_COOL,
@@ -15,8 +15,8 @@ from libdyson import (
     DysonPureCoolLink,
     DysonPurifierHumidifyCool,
 )
-from libdyson.const import ENVIRONMENTAL_OFF, MessageType
-from libdyson.dyson_device import DysonDevice, DysonFanDevice
+from .vendor.libdyson.const import ENVIRONMENTAL_OFF, MessageType
+from .vendor.libdyson.dyson_device import DysonDevice, DysonFanDevice
 import pytest
 
 from custom_components.dyson_local.sensor import SENSORS

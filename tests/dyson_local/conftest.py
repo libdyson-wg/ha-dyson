@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from libdyson import DysonDevice
+from .vendor.libdyson import DysonDevice
 import pytest
 
 from custom_components.dyson_local import DOMAIN

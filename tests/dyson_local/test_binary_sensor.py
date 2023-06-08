@@ -2,14 +2,14 @@
 
 from unittest.mock import patch
 
-from libdyson import (
+from .vendor.libdyson import (
     DEVICE_TYPE_360_EYE,
     DEVICE_TYPE_360_HEURIST,
     Dyson360Eye,
     Dyson360Heurist,
 )
-from libdyson.const import MessageType
-from libdyson.dyson_vacuum_device import DysonVacuumDevice
+from .vendor.libdyson.const import MessageType
+from .vendor.libdyson.dyson_vacuum_device import DysonVacuumDevice
 import pytest
 
 from custom_components.dyson_local.binary_sensor import ICON_BIN_FULL

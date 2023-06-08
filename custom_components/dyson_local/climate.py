@@ -3,7 +3,7 @@
 import logging
 from typing import List, Optional
 
-from libdyson import DysonPureHotCoolLink
+from .vendor.libdyson import DysonPureHotCoolLink
 
 from custom_components.dyson_local.utils import environmental_property
 from homeassistant.components.climate import ClimateEntity

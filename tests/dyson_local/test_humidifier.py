@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from libdyson import DEVICE_TYPE_PURE_HUMIDIFY_COOL, DysonPurifierHumidifyCool, MessageType
-from libdyson.const import AirQualityTarget
+from .vendor.libdyson import DEVICE_TYPE_PURE_HUMIDIFY_COOL, DysonPurifierHumidifyCool, MessageType
+from .vendor.libdyson.const import AirQualityTarget
 import pytest
 
 from custom_components.dyson_local.humidifier import (

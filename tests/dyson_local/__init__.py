@@ -3,8 +3,8 @@
 from typing import Type
 from unittest.mock import MagicMock
 
-from libdyson.const import MessageType
-from libdyson.dyson_device import DysonDevice
+from .vendor.libdyson.const import MessageType
+from .vendor.libdyson.dyson_device import DysonDevice
 
 from homeassistant.core import HomeAssistant, callback
 
