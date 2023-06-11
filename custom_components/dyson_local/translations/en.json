@@ -12,26 +12,26 @@
         "data": {
           "ssid": "Device WiFi SSID",
           "password": "Device WiFi Password",
-          "host": "Host (Optional)"
+          "host": "Device IP Address (Optional)"
         }
       },
       "manual": {
         "data": {
           "serial": "Serial",
           "credential": "Credential",
-          "host": "Host (Optional)",
+          "host": "Device IP Address (Optional)",
           "device_type": "Device Type"
         }
       },
       "host": {
         "data": {
-          "host": "Host (Optional)"
+          "host": "Device IP Address (Optional)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect",
-      "cannot_find": "Failed to find the device using discovery",
+      "cannot_connect": "Failed to connect. The Host/IP Address may be required if your Home Assistant installation is running in a Container or a VM.",
+      "cannot_find": "Failed to find the device using discovery. The Host/IP Address may be required if your Home Assistant installation is running in a Container or a VM.",
       "invalid_auth": "Invalid authentication",
       "cannot_parse_wifi_info": "Failed to parse device WiFi information"
     },
