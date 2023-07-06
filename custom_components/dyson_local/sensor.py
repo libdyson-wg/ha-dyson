@@ -17,6 +17,7 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass,
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    CONCENTRATION_MILLIGRAMS_PER_CUBIC_METER,
     CONF_NAME,
     PERCENTAGE,
     TEMP_CELSIUS,
@@ -372,10 +373,11 @@ class DysonHCHOSensor(DysonSensorEnvironmental):
     _SENSOR_NAME = "Formaldehyde"
 
     _attr_device_class = SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS
+    _attr_native_unit_of_measurement = CONCENTRATION_MILLIGRAMS_PER_CUBIC_METER
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
-    def native_value(self) -> Optional[int]:
+    def native_value(self) -> Optional[float]:
         """Return the state of the sensor."""
         if (value := self._device.formaldehyde) >= 0:
             return value
