@@ -257,13 +257,13 @@ class DysonFanDevice(DysonDevice):
         return self._get_field_value(self._status, "wacd")
 
     @property
-    def formaldehyde(self) -> Optional[int]:
+    def formaldehyde(self) -> Optional[float]:
         """Return formaldehyde reading."""
-        val = self._get_environmental_field_value("hcho")
+        val = self._get_environmental_field_value("hchr", divisor=1000)
         if val is None:
             return None
 
-        return int(val)
+        return float(val)
 
     @property
     def humidity(self) -> int:
