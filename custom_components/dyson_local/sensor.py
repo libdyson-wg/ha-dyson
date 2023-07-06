@@ -369,8 +369,8 @@ class DysonNO2Sensor(DysonSensorEnvironmental):
 class DysonHCHOSensor(DysonSensorEnvironmental):
     """Dyson sensor for Formaldehyde."""
 
-    _SENSOR_TYPE = "hcho"
-    _SENSOR_NAME = "Formaldehyde"
+    _SENSOR_TYPE = "hcho-mg"
+    _SENSOR_NAME = "HCHO"
 
     _attr_device_class = SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS
     _attr_native_unit_of_measurement = CONCENTRATION_MILLIGRAMS_PER_CUBIC_METER
