@@ -1,8 +1,6 @@
 # HomeAssistant Custom Integration for Dyson
 
-This custom integration is still under development.
-
-This is a HA custom integration for dyson. There are several main differences between this custom integration and the official dyson integration:
+This is a HA custom integration for dyson under active development.
 
 - It does not rely on a dyson account. Which means once configured, the integration will no longer login to the Dyson cloud service so fast and more reliable start up process.
 - Config flow and discovery is supported, so easier configuration.
@@ -44,20 +42,25 @@ You can also install manually
 
 There are two integrations, Dyson Local and Dyson Cloud. Due to the limitation of HACS, they are split into two repositories. This repository hosts Dyson Local, and https://github.com/libdyson-wg/ha-dyson-cloud hosts Dyson Cloud.
 
-### Dyson Local
+### Dyson Devices Supported
 
-Dyson Local uses MQTT-based protocol to communicate with local Dyson devices using credentials. Currently it supports
+Dyson Local uses MQTT-based protocol to communicate with local Dyson devices using credentials. Only WiFi enabled models have this capability. Currently the following models are supported, and support for more models can be added on request.
 
 - Dyson 360 Eye robot vacuum
 - Dyson 360 Heurist robot vacuum
 - Dyson Pure Cool
+- Dyson Purifier Cool
+- Dyson Purifier Cool Formaldehyde
 - Dyson Pure Cool Desk
 - Dyson Pure Cool Link
 - Dyson Pure Cool Link Desk
 - Dyson Pure Hot+Cool
-- Dyson Purifier Hot+Cool
 - Dyson Pure Hot+Cool Link
+- Dyson Purifier Hot+Cool
+- Dyson Purifier Hot+Cool Formaldehyde
 - Dyson Pure Humidity+Cool
+- Dyson Purifier Humidity+Cool
+- Dyson Purifier Humidity+Cool Formaldehyde
 
 ### Dyson Cloud
 
@@ -67,7 +70,9 @@ Dyson Cloud uses HTTP-based API to communicate with cloud service. Currently it 
 
 ### Setup using device WiFi information
 
-Version 0.6.1 introduced a new way to set up. This is inspired by https://community.home-assistant.io/t/dyson-pure-cool-link-local-mqtt-control/217263. Set up through UI and select "Setup using WiFi information". Find your device WiFi SSID and password on the sticker on your device body or user's manual (See the figure below). Don't fill in your home WiFi information. Note that this method only uses SSID and password to calculate serial, credential, and device type so you still need to setup your device on the official mobile app first.
+Note: Some new models released after 2020 do not ship with a WiFi sticker. They are still supported by this integration, but the Dyson Cloud integration is necessary for initial setup. After setup, however, the Dyson Cloud integration can be removed.
+
+Find your device WiFi SSID and password on the sticker on your device body or user's manual. Don't fill in your home WiFi information. Note that this method only uses SSID and password to calculate serial, credential, and device type so you still need to setup your device on the official mobile app first.
 
 ### Setup using Dyson cloud account
 
@@ -76,19 +81,6 @@ You can also set up Dyson Cloud first so that you don't need to manually get dev
 ### Setup manually
 
 If you want to manually set up Dyson Local, you need to get credentials first. Clone or download https://github.com/libdyson-wg/libdyson-neon, then use `python3 get_devices.py` to do that. You may need to install some dependencies using `pip3 install -r requirements.txt`.
-
-## Debug Log
-
-To enable debug log, add the following lines to your `configuration.yaml` and restart your HomeAssistant.
-
-```yaml
-logger:
-  default: info
-  logs:
-    libdyson: debug
-    custom_components.dyson_local: debug
-    custom_components.dyson_cloud: debug
-```
 
 ## FAQ
 
