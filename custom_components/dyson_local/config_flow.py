@@ -30,8 +30,9 @@ CONF_SSID = "ssid"
 CONF_PASSWORD = "password"
 
 SETUP_METHODS = {
-    "wifi": "Setup using WiFi information",
+    "wifi": "Setup using your device's WiFi sticker",
     "manual": "Setup manually",
+    "cloud": "Setup automatically via Dyson Cloud",
 }
 
 
@@ -50,6 +51,8 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if info is not None:
             if info[CONF_METHOD] == "wifi":
                 return await self.async_step_wifi()
+            if info[CONF_METHOD] == "cloud":
+                return await self.async_step_cloud()
             return await self.async_step_manual()
 
         return self.async_show_form(
@@ -106,6 +109,13 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             ),
             errors=errors,
+        )
+
+    async def async_step_cloud(self, info: Optional[dict] = None):
+        """Handle step to direct users to install Dyson Cloud."""
+
+        return self.async_show_form(
+            step_id="cloud",
         )
 
     async def async_step_manual(self, info: Optional[dict] = None):

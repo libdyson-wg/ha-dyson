@@ -7,8 +7,11 @@
           "method": "Setup method"
         }
       },
+      "cloud": {
+        "description": "If your device has been added to the MyDyson app, you can use the Dyson Cloud integration to configure it automatically. You can remove the Dyson Cloud integration after configuring your devices. This is necessary for most Dyson devices released after 2020, which no longer ship with a WiFi sticker. If you haven't installed the Dyson Cloud integration, it can be installed through HACS."
+      },
       "wifi": {
-        "description": "Find your device WiFi information from the sticker on your device body or user's manual. Don't fill in your home WiFi info.",
+        "description": "Find your device WiFi information from the sticker on your device body or user's manual. Note: If your device shipped without a WiFi sticker, or you no longer have the WiFi sticker, you may be able to use the Dyson Cloud integration in HACS to set up your device.",
         "data": {
           "ssid": "Device WiFi SSID",
           "password": "Device WiFi Password",
@@ -30,7 +33,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect. The Host/IP Address may be required if your Home Assistant installation is running in a Container or a VM.",
+      "cannot_connect": "Failed to connect. The IP Address may be required if your Home Assistant installation is running in a Container or a VM.",
       "cannot_find": "Failed to find the device using discovery. The Host/IP Address may be required if your Home Assistant installation is running in a Container or a VM.",
       "invalid_auth": "Invalid authentication",
       "cannot_parse_wifi_info": "Failed to parse device WiFi information"
