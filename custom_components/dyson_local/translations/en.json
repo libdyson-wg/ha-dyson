@@ -7,11 +7,17 @@
           "method": "Setup method"
         }
       },
-      "wifi": {
-        "description": "Find your device WiFi information from the sticker on your device body or user's manual. Don't fill in your home WiFi info.",
+      "cloud": {
+        "description": "Using your MyDyson Account, you can automate the setup even for devices without a Wi-Fi information sticker (The device must still be connected to Wi-Fi and registered with your MyDyson mobile app).",
         "data": {
-          "ssid": "Device WiFi SSID",
-          "password": "Device WiFi Password",
+          "region": "Region"
+        }
+      },
+      "wifi": {
+        "description": "Find your device Wi-Fi information from the sticker on your device body or user's manual. Note: If your device shipped without a Wi-Fi sticker, or you no longer have the Wi-Fi sticker, you may still use your MyDyson account to set up your devices.",
+        "data": {
+          "ssid": "Device Wi-Fi SSID",
+          "password": "Device Wi-Fi Password",
           "host": "Device IP Address (Optional)"
         }
       },
@@ -27,13 +33,38 @@
         "data": {
           "host": "Device IP Address (Optional)"
         }
+      },
+      "email": {
+        "data": {
+          "email": "Email address"
+        }
+      },
+      "email_otp": {
+        "data": {
+          "otp": "MyDyson verification code (Check your email)",
+          "password": "Password"
+        }
+      },
+      "mobile": {
+        "data": {
+          "mobile": "Phone number"
+        }
+      },
+      "mobile_otp": {
+        "data": {
+          "otp": "MyDyson verification code (Check your mobile phone)"
+        }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect. The Host/IP Address may be required if your Home Assistant installation is running in a Container or a VM.",
+      "cannot_connect": "Failed to connect. The IP Address may be required if your Home Assistant installation is running in a Container or a VM.",
+      "cannot_connect_cloud": "Failed to connect to the Dyson App API. Please check your network configuration and ensure your Home Assistant can reach the Internet.",
       "cannot_find": "Failed to find the device using discovery. The Host/IP Address may be required if your Home Assistant installation is running in a Container or a VM.",
-      "invalid_auth": "Invalid authentication",
-      "cannot_parse_wifi_info": "Failed to parse device WiFi information"
+      "cannot_parse_wifi_info": "Failed to parse device Wi-Fi information. Please double check the information on your device's Wi-Fi sticker.",
+      "email_not_registered": "Your Email address was not recognized by the Dyson App API. Please confirm your MyDyson Account Information and try again.",
+      "invalid_auth": "Invalid password. Please double check and try again.",
+      "invalid_otp": "Invalid MyDyson verification code. Please confirm the verification code in your email.",
+      "otp_too_frequent": "Too many login attempts. Please wait a little while and try again later."
     },
     "abort": {
       "already_configured": "Device already configured"

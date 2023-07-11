@@ -15,12 +15,20 @@ from .vendor.libdyson import (
     MessageType,
     get_device,
 )
+from .vendor.libdyson.cloud import (
+    DysonAccountCN,
+    DysonAccount,
+)
 from .vendor.libdyson.discovery import DysonDiscovery
 from .vendor.libdyson.dyson_device import DysonDevice
-from .vendor.libdyson.exceptions import DysonException
+from .vendor.libdyson.exceptions import (
+    DysonException,
+    DysonNetworkError,
+    DysonLoginFailure,
+)
 
 from homeassistant.components.zeroconf import async_get_instance
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, SOURCE_DISCOVERY
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -37,9 +45,18 @@ from .const import (
     DOMAIN,
 )
 
+from .cloud.const import (
+    CONF_REGION,
+    CONF_AUTH,
+    DATA_ACCOUNT,
+    DATA_DEVICES,
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 ENVIRONMENTAL_DATA_UPDATE_INTERVAL = timedelta(seconds=30)
+
+PLATFORMS = ["camera"]
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -52,8 +69,44 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     return True
 
 
+async def async_setup_account(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up a MyDyson Account."""
+    if entry.data[CONF_REGION] == "CN":
+        account = DysonAccountCN(entry.data[CONF_AUTH])
+    else:
+        account = DysonAccount(entry.data[CONF_AUTH])
+    try:
+        devices = await hass.async_add_executor_job(account.devices)
+    except DysonNetworkError:
+        _LOGGER.error("Cannot connect to Dyson cloud service.")
+        raise ConfigEntryNotReady
+
+    for device in devices:
+        hass.async_create_task(
+            hass.config_entries.flow.async_init(
+                DOMAIN,
+                context={"source": SOURCE_DISCOVERY},
+                data=device,
+            )
+        )
+
+    hass.data[DOMAIN][entry.entry_id] = {
+        DATA_ACCOUNT: account,
+        DATA_DEVICES: devices,
+    }
+    for component in PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(entry, component)
+        )
+
+    return True
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Dyson from a config entry."""
+    if CONF_REGION in entry.data:
+        return await async_setup_account(hass, entry)
+
     device = get_device(
         entry.data[CONF_SERIAL],
         entry.data[CONF_CREDENTIAL],
