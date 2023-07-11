@@ -1,10 +1,16 @@
-# HomeAssistant Custom Integration for Dyson
+# Home Assistant Integration for Dyson Devices
 
-This is a Home Assistant custom integration for dyson under active development.
+This is a Home Assistant custom integration for Wi-Fi Connected Dyson devices, and is being actively developed. It replaces the Dyson Local and Dyson Cloud integrations by shenxn, which are no longer maintained.
+
+![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/libdyson-wg/ha-dyson)
+![Latest Release](https://badgen.net/github/release/libdyson-wg/ha-dyson)
+![validate](https://badgen.net/github/checks/libdyson-wg/ha-dyson/main/validate)
+![HACS Action](https://badgen.net/github/checks/libdyson-wg/ha-dyson/main/HACS%20Action)
+![HACS Action](https://badgen.net/github/last-commit/libdyson-wg/ha-dyson/main)
 
 ## Migration from shenxn/ha-dyson
 
-If you used the original repository from shenxn, you can migrate fairly easily:
+If you used Dyson Local from shenxn, you can migrate fairly easily:
 
 ### Experimental no-reconfiguration migration
 
