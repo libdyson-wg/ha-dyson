@@ -11,15 +11,23 @@ from .vendor.libdyson.exceptions import (
     DysonException,
     DysonFailedToParseWifiInfo,
     DysonInvalidCredential,
+    DysonNetworkError,
+    DysonOTPTooFrequently,
+    DysonInvalidAccountStatus,
+    DysonLoginFailure,
 )
+from .vendor.libdyson.cloud import DysonAccount, DysonAccountCN, REGIONS
+
 import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.components.zeroconf import async_get_instance
-from homeassistant.const import CONF_HOST, CONF_NAME
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_EMAIL, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL, DOMAIN
+
+from .cloud.const import CONF_REGION, CONF_AUTH
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,14 +35,14 @@ DISCOVERY_TIMEOUT = 10
 
 CONF_METHOD = "method"
 CONF_SSID = "ssid"
-CONF_PASSWORD = "password"
+CONF_MOBILE = "mobile"
+CONF_OTP = "otp"
 
 SETUP_METHODS = {
-    "wifi": "Setup using your device's WiFi sticker",
+    "wifi": "Setup using your device's Wi-Fi sticker",
+    "cloud": "Setup automatically with your MyDyson Account",
     "manual": "Setup manually",
-    "cloud": "Setup automatically via Dyson Cloud",
 }
-
 
 class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Dyson local config flow."""
@@ -61,7 +69,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_wifi(self, info: Optional[dict] = None):
-        """Handle step to setup using device WiFi information."""
+        """Handle step to set up using device Wi-Fi information."""
         errors = {}
         if info is not None:
             try:
@@ -112,11 +120,135 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_cloud(self, info: Optional[dict] = None):
-        """Handle step to direct users to install Dyson Cloud."""
+        if info is not None:
+            self._region = info[CONF_REGION]
+            if self._region == "CN":
+                return await self.async_step_mobile()
+            return await self.async_step_email()
 
+        region_names = {
+            code: f"{name} ({code})"
+            for code, name in REGIONS.items()
+        }
         return self.async_show_form(
             step_id="cloud",
+            data_schema=vol.Schema({
+                vol.Required(CONF_REGION): vol.In(region_names)
+            }),
         )
+
+    async def async_step_email(self, info: Optional[dict]=None):
+        errors = {}
+        if info is not None:
+            email = info[CONF_EMAIL]
+            unique_id = f"global_{email}"
+            for entry in self._async_current_entries():
+                if entry.unique_id == unique_id:
+                    return self.async_abort(reason="already_configured")
+            await self.async_set_unique_id(unique_id)
+            self._abort_if_unique_id_configured()
+
+            account = DysonAccount()
+            try:
+                self._verify = await self.hass.async_add_executor_job(
+                    account.login_email_otp, email, self._region
+                )
+            except DysonNetworkError:
+                errors["base"] = "cannot_connect_cloud"
+            except DysonInvalidAccountStatus:
+                errors["base"] = "email_not_registered"
+            else:
+                self._email = email
+                return await self.async_step_email_otp()
+
+        info = info or {}
+        return self.async_show_form(
+            step_id="email",
+            data_schema=vol.Schema({
+                vol.Required(CONF_EMAIL, default=info.get(CONF_EMAIL, "")): str,
+            }),
+            errors=errors,
+        )
+
+    async def async_step_email_otp(self, info: Optional[dict]=None):
+        errors = {}
+        if info is not None:
+            try:
+                auth_info = await self.hass.async_add_executor_job(
+                    self._verify, info[CONF_OTP], info[CONF_PASSWORD]
+                )
+            except DysonLoginFailure:
+                errors["base"] = "invalid_auth"
+            else:
+                return self.async_create_entry(
+                    title=f"MyDyson: {self._email} ({self._region})",
+                    data={
+                        CONF_REGION: self._region,
+                        CONF_AUTH: auth_info,
+                    }
+                )
+
+        return self.async_show_form(
+            step_id="email_otp",
+            data_schema=vol.Schema({
+                vol.Required(CONF_PASSWORD): str,
+                vol.Required(CONF_OTP): str,
+            }),
+            errors=errors,
+        )
+
+    async def async_step_mobile(self, info: Optional[dict]=None):
+        errors = {}
+        if info is not None:
+            account = DysonAccountCN()
+            mobile = info[CONF_MOBILE]
+            if not mobile.startswith("+"):
+                mobile = f"+86{mobile}"
+            try:
+                self._verify = await self.hass.async_add_executor_job(
+                    account.login_mobile_otp, mobile
+                )
+            except DysonOTPTooFrequently:
+                errors["base"] = "otp_too_frequent"
+            else:
+                self._mobile = mobile
+                return await self.async_step_mobile_otp()
+
+        info = info or {}
+        return self.async_show_form(
+            step_id="mobile",
+            data_schema=vol.Schema({
+                vol.Required(CONF_MOBILE, default=info.get(CONF_MOBILE, "")): str,
+            }),
+            errors=errors,
+        )
+
+    async def async_step_mobile_otp(self, info: Optional[dict]=None):
+        errors = {}
+        if info is not None:
+            try:
+                auth_info = await self.hass.async_add_executor_job(
+                    self._verify, info[CONF_OTP]
+                )
+            except DysonLoginFailure:
+                errors["base"] = "invalid_otp"
+            else:
+                return self.async_create_entry(
+                    title=f"MyDyson: {self._mobile} ({self._region})",
+                    data={
+                        CONF_REGION: self._region,
+                        CONF_AUTH: auth_info,
+                    }
+                )
+
+        return self.async_show_form(
+            step_id="mobile_otp",
+            data_schema=vol.Schema({
+                vol.Required(CONF_OTP): str,
+            }),
+            errors=errors,
+        )
+
 
     async def async_step_manual(self, info: Optional[dict] = None):
         """Handle step to setup manually."""
