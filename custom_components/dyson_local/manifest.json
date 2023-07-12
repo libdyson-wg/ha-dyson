@@ -7,5 +7,5 @@
     "documentation": "https://github.com/libdyson-wg/ha-dyson",
     "iot_class": "local_push",
     "issue_tracker": "https://github.com/libdyson-wg/ha-dyson/issues",
-    "version": "0.22.1"
+    "version": "1.0.0"
 }
