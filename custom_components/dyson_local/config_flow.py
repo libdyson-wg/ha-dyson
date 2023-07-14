@@ -333,7 +333,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_discovery(self, info: DysonDeviceInfo):
-        """Handle step initialized by dyson_cloud discovery."""
+        """Handle step initialized by MyDyson discovery."""
         for entry in self._async_current_entries():
             if entry.unique_id == info.serial:
                 return self.async_abort(reason="already_configured")
