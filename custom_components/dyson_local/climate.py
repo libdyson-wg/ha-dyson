@@ -3,9 +3,10 @@
 import logging
 from typing import List, Optional
 
+from .const import DATA_DEVICES, DOMAIN
+from .utils import environmental_property
 from .vendor.libdyson import DysonPureHotCoolLink
 
-from custom_components.dyson_local.utils import environmental_property
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
     CURRENT_HVAC_COOL,
@@ -25,7 +26,6 @@ from homeassistant.const import ATTR_TEMPERATURE, CONF_NAME, TEMP_CELSIUS
 from homeassistant.core import Callable, HomeAssistant
 
 from . import DysonEntity
-from .const import DATA_DEVICES, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
