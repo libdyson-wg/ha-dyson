@@ -1,4 +1,5 @@
 set_angle:
+  name: Set Angle
   description: Set the oscillation angle of the selected fan(s).
   fields:
     entity_id:
@@ -12,6 +13,7 @@ set_angle:
       example: 255
 
 set_timer:
+  name: Set Timer
   description: Set the sleep timer.
   fields:
     entity_id:
