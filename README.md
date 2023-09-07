@@ -58,6 +58,8 @@ This integration uses MQTT-based protocol to communicate with Dyson devices. Onl
 - Dyson Pure Humidity+Cool
 - Dyson Purifier Humidity+Cool
 - Dyson Purifier Humidity+Cool Formaldehyde
+- Dyson Purifier Big+Quiet
+- Dyson Purifier Big+Quiet Formaldehyde
 
 ### MyDyson Accounts
 
