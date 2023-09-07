@@ -17,6 +17,7 @@ from .const import (
     DEVICE_TYPE_PURE_HUMIDIFY_COOL,
     DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_E,
     DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_K,
+    DEVICE_TYPE_PURIFIER_BIG_QUIET,
 )
 
 from .const import CleaningMode  # noqa: F401
@@ -37,6 +38,7 @@ from .dyson_pure_cool_link import DysonPureCoolLink
 from .dyson_pure_hot_cool import DysonPureHotCool
 from .dyson_pure_hot_cool_link import DysonPureHotCoolLink
 from .dyson_pure_humidify_cool import DysonPurifierHumidifyCool
+from .dyson_purifier_big_quiet import DysonBigQuiet
 from .utils import get_mqtt_info_from_wifi_info  # noqa: F401
 
 
@@ -72,4 +74,8 @@ def get_device(serial: str, credential: str, device_type: str) -> Optional[Dyson
         DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_E,
     ]:
         return DysonPurifierHumidifyCool(serial, credential, device_type)
+    if device_type in {
+        DEVICE_TYPE_PURIFIER_BIG_QUIET,
+    }:
+        return DysonBigQuiet(serial, credential, device_type)
     return None
