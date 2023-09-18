@@ -8,7 +8,7 @@ This is a Home Assistant custom integration for Wi-Fi connected Dyson devices, a
 [![HACS Action](https://badgen.net/github/checks/libdyson-wg/ha-dyson/main/HACS%20Action)](https://github.com/libdyson-wg/ha-dyson/actions/workflows/hacs.yaml)
 [![Latest Commit](https://badgen.net/github/last-commit/libdyson-wg/ha-dyson/main)](https://github.com/libdyson-wg/ha-dyson/commit/HEAD)
 
-## Migration from shenxn/ha-dyson
+## Migration from [shenxn/ha-dyson](https://github.com/shenxn/ha-dyson)
 
 If you used Dyson Local from shenxn, you can migrate fairly easily:
 
@@ -66,6 +66,8 @@ This integration uses MQTT-based protocol to communicate with Dyson devices. Onl
 MyDyson mobile apps use an HTTP-based API, which is also used by the MyDyson part of this integration. Currently it supports automated setup of your devices by discovering and fetching credentials from the API. It also supports getting cleaning maps as `camera` entities for 360 Eye robot vacuum.
 
 ## Setup
+
+Once you have installed the integration, navigate to `Settings > Devices` tab, press `Add integration` on the bottom right and search for `Dyson`.
 
 ### Setup using device WiFi information
 
