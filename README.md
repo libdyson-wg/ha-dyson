@@ -8,29 +8,6 @@ This is a Home Assistant custom integration for Wi-Fi connected Dyson devices, a
 [![HACS Action](https://badgen.net/github/checks/libdyson-wg/ha-dyson/main/HACS%20Action)](https://github.com/libdyson-wg/ha-dyson/actions/workflows/hacs.yaml)
 [![Latest Commit](https://badgen.net/github/last-commit/libdyson-wg/ha-dyson/main)](https://github.com/libdyson-wg/ha-dyson/commit/HEAD)
 
-## Migration from shenxn/ha-dyson
-
-If you used Dyson Local from shenxn, you can migrate fairly easily:
-
-### Experimental no-reconfiguration migration
-
- This is less proven, but it is possible to switch over with zero impact to your current integration configuration, entities/devices, or dashboards. I don't know what side-effects it may have though (leftover old config data might start causing issues or something - no guarantees).
-
-1. Remove the ha-dyson and ha-dyson-cloud custom repositories from HACS
-    - _Without_ removing the integrations themselves
-3. Install the new [ha-dyson](https://github.com/libdyson-wg/ha-dyson)
-    - If you installed this as a Custom Repository, update the ha-dyson repository using the HACS updater
-
-### Proven some-reconfiguration migration
-
-This is proven to work without any side effects. If you used the default IDs for the entities and devices, then you'll just need to re-configure the devices but your dashboards will not need updating.
-
-1. Remove the Dyson Local and Dyson Cloud _integrations_ from your /config/integrations page.
-1. Remove the Dyson Local and Dyson Cloud _integrations_ from your /hacs/integrations page.
-2. Remove the dyson-ha and dyson-ha-cloud custom repositories from HACS
-3. Add the new [dyson-ha](https://github.com/libdyson-wg/ha-dyson)
-    - If you installed this as a Custom Repository, update the ha-dyson repository using the HACS updater
-
 ## Installation
 
 The minimum supported Home Assistant version is 2021.12.0.
@@ -67,6 +44,8 @@ MyDyson mobile apps use an HTTP-based API, which is also used by the MyDyson par
 
 ## Setup
 
+Once you have installed the integration, navigate to `Settings > Devices` tab, press `Add integration` on the bottom right and search for `Dyson`.
+
 ### Setup using device WiFi information
 
 Note: Some new models released after 2020 do not ship with a Wi-Fi information sticker. They are still supported by this integration, but can only be configured via your MyDyson account. After setting up your devices, your account can be deleted from Home Assistant if you prefer to stay offline.
@@ -86,3 +65,27 @@ If you want to manually set up a Dyson device, you need to get credentials first
 ### I got "not a valid add-on repository" when I try to add this repo
 
 This is a **custom integration** not a **custom add-on**. You need to install [HACS](https://hacs.xyz/) and add this repo there.
+
+
+### How do I migrate from [shenxn/ha-dyson](https://github.com/shenxn/ha-dyson)?
+
+If you used Dyson Local from shenxn, you can migrate fairly easily:
+
+#### Experimental no-reconfiguration migration
+
+ This is less proven, but it is possible to switch over with zero impact to your current integration configuration, entities/devices, or dashboards. I don't know what side-effects it may have though (leftover old config data might start causing issues or something - no guarantees).
+
+1. Remove the ha-dyson and ha-dyson-cloud custom repositories from HACS
+    - _Without_ removing the integrations themselves
+3. Install the new [ha-dyson](https://github.com/libdyson-wg/ha-dyson)
+    - If you installed this as a Custom Repository, update the ha-dyson repository using the HACS updater
+
+#### Proven some-reconfiguration migration
+
+This is proven to work without any side effects. If you used the default IDs for the entities and devices, then you'll just need to re-configure the devices but your dashboards will not need updating.
+
+1. Remove the Dyson Local and Dyson Cloud _integrations_ from your /config/integrations page.
+1. Remove the Dyson Local and Dyson Cloud _integrations_ from your /hacs/integrations page.
+2. Remove the dyson-ha and dyson-ha-cloud custom repositories from HACS
+3. Add the new [dyson-ha](https://github.com/libdyson-wg/ha-dyson)
+    - If you installed this as a Custom Repository, update the ha-dyson repository using the HACS updater
