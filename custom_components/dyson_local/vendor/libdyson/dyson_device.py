@@ -233,6 +233,11 @@ class DysonFanDevice(DysonDevice):
 
     @property
     @abstractmethod
+    def normal_mode(self) -> bool:
+        """Return normal mode status."""
+
+    @property
+    @abstractmethod
     def oscillation(self) -> bool:
         """Return oscillation status."""
 
