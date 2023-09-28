@@ -49,8 +49,9 @@ SET_TIMER_SCHEMA = {
 }
 
 PRESET_MODE_AUTO = "Auto"
+PRESET_MODE_NORMAL = "Normal"
 
-SUPPORTED_PRESET_MODES = [PRESET_MODE_AUTO]
+SUPPORTED_PRESET_MODES = [PRESET_MODE_AUTO, PRESET_MODE_NORMAL]
 
 SPEED_RANGE = (1, 10)
 
@@ -130,12 +131,15 @@ class DysonFanEntity(DysonEntity, FanEntity):
         """Return the current selected preset mode."""
         if self._device.auto_mode:
             return PRESET_MODE_AUTO
-        return None
+        else:
+            return PRESET_MODE_NORMAL
 
     def set_preset_mode(self, preset_mode: str) -> None:
         """Configure the preset mode."""
         if preset_mode == PRESET_MODE_AUTO:
             self._device.enable_auto_mode()
+        elif preset_mode == PRESET_MODE_NORMAL:
+            self._device.disable_auto_mode()
         else:
             raise NotValidPresetModeError(f"Invalid preset mode: {preset_mode}")
 
