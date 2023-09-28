@@ -131,9 +131,8 @@ class DysonFanEntity(DysonEntity, FanEntity):
         """Return the current selected preset mode."""
         if self._device.auto_mode:
             return PRESET_MODE_AUTO
-        elif self._device.normal_mode:
+        else:
             return PRESET_MODE_NORMAL
-        return None
 
     def set_preset_mode(self, preset_mode: str) -> None:
         """Configure the preset mode."""

@@ -21,11 +21,6 @@ class DysonPureCoolLink(DysonFanDevice):
     def auto_mode(self) -> bool:
         """Return auto mode status."""
         return self.fan_mode == "AUTO"
-    
-    @property
-    def normal_mode(self) -> bool:
-        """Return auto mode status."""
-        return self.fan_mode == "NORMAL"
 
     @property
     def oscillation(self) -> bool:
