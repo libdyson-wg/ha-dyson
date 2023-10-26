@@ -62,6 +62,11 @@ class DysonBigQuiet(DysonFanDevice):
         """Return the index value for nitrogen."""
         return self._get_environmental_field_value("noxl", divisor=10)
 
+    @property
+    def carbon_dioxide(self) -> Optional[int]:
+        """Return the PPM of carbon dioxide"""
+        return self._get_environmental_field_value("co2r")
+
     def turn_on(self) -> None:
         """Turn on the device."""
         self._set_configuration(fpwr="ON")
