@@ -212,6 +212,8 @@ def _async_get_platforms(device: DysonDevice) -> List[str]:
         platforms.extend(["binary_sensor", "climate"])
     if isinstance(device, DysonPurifierHumidifyCool):
         platforms.append("humidifier")
+    if hasattr(device, "filter_life") or hasattr(device, "carbon_filter_life") or hasattr(device, "hepa_filter_life"):
+        platforms.append("button")
     return platforms
 
 
