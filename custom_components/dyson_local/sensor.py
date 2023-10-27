@@ -8,6 +8,7 @@ from .vendor.libdyson import (
     DysonDevice,
     DysonPureCoolLink,
     DysonPurifierHumidifyCool,
+    DysonBigQuiet,
 )
 
 from .vendor.libdyson.const import MessageType
@@ -18,6 +19,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     CONCENTRATION_MILLIGRAMS_PER_CUBIC_METER,
+    CONCENTRATION_PARTS_PER_MILLION,
     CONF_NAME,
     PERCENTAGE,
     TEMP_CELSIUS,
@@ -58,7 +60,10 @@ async def async_setup_entry(
                     DysonParticulatesSensor(coordinator, device, name),
                 ]
             )
-        else:  # DysonPureCool or DysonPurifierHumidifyCool
+        elif isinstance(device, DysonBigQuiet):
+            if hasattr(device, "carbon_dioxide") and device.carbon_dioxide is not None:
+                entities.append(DysonCarbonDioxideSensor(coordinator, device, name))
+        else:
             entities.extend(
                 [
                     DysonPM25Sensor(coordinator, device, name),
@@ -386,3 +391,26 @@ class DysonHCHOSensor(DysonSensorEnvironmental):
     def available(self) -> bool:
         """Return available only if device not in off, init or failed states."""
         return isinstance(self._device.formaldehyde, (int, float))
+
+
+class DysonCarbonDioxideSensor(DysonSensorEnvironmental):
+    """Dyson sensor for Carbon Dioxide."""
+
+    _SENSOR_TYPE = "c02"
+    _SENSOR_NAME = "Carbon Dioxide"
+
+    _attr_device_class = SensorDeviceClass.CO2
+    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    @property
+    def native_value(self) -> Optional[float]:
+        """Return the state of the sensor."""
+        if (value := self._device.carbon_dioxide) >= 0:
+            return value
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return isinstance(self._device.carbon_dioxide, (int, float))
