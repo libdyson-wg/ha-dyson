@@ -27,7 +27,6 @@ async def async_setup_entry(
     entities = []
 
     if hasattr(device, "filter_life"):
-        _LOGGER.debug(f"two {name}")
         entities.append(DysonFilterResetButton(device, name))
 
     async_add_entities(entities)
