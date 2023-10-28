@@ -60,10 +60,11 @@ async def async_setup_entry(
                     DysonParticulatesSensor(coordinator, device, name),
                 ]
             )
-        elif isinstance(device, DysonBigQuiet):
-            if hasattr(device, "carbon_dioxide") and device.carbon_dioxide is not None:
-                entities.append(DysonCarbonDioxideSensor(coordinator, device, name))
         else:
+            if isinstance(device, DysonBigQuiet):
+                if hasattr(device, "carbon_dioxide") and device.carbon_dioxide is not None:
+                    entities.append(DysonCarbonDioxideSensor(coordinator, device, name))
+
             entities.extend(
                 [
                     DysonPM25Sensor(coordinator, device, name),
