@@ -23,7 +23,6 @@ async def async_setup_entry(
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
 
-    _LOGGER.debug(f"one {name}")
 
     entities = []
 
