@@ -23,12 +23,10 @@ async def async_setup_entry(
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
 
-    _LOGGER.error(f"one {name}")
 
     entities = []
 
     if hasattr(device, "filter_life"):
-        _LOGGER.error(f"two {name}")
         entities.append(DysonFilterResetButton(device, name))
 
     async_add_entities(entities)
