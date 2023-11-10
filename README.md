@@ -13,6 +13,7 @@ This is a Home Assistant custom integration for Wi-Fi connected Dyson devices, a
 The minimum supported Home Assistant version is 2021.12.0.
 
 You can install using HACS. If it is not yet available in the default HACS search, you can add https://github.com/libdyson-wg/ha-dyson as a custom repository. 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=libdyson-wg&repository=ha-dyson&category=integration)
 
 You can also install manually by copying the `custom_components` from this repository into your Home Assistant installation.
 
