@@ -10,10 +10,6 @@ This is a Home Assistant custom integration for Wi-Fi connected Dyson devices, a
 
 ## Installation
 
-The minimum supported Home Assistant version is 2021.12.0.
-
-You can install using HACS. If it is not yet available in the default HACS search, you can add https://github.com/libdyson-wg/ha-dyson as a custom repository. 
-
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=libdyson-wg&repository=ha-dyson&category=integration)
 
 You can also install manually by copying the `custom_components` from this repository into your Home Assistant installation.
@@ -60,6 +56,8 @@ Find your device WiFi SSID and password on the sticker on your device body or us
 ### Setup using your MyDyson account
 
 You can also set up a MyDyson account first so that you don't need to manually get device credentials. After successfully connecting your account, all devices under the account will be shown as discovered entities and you can easily set them up. After that, you can even remove MyDyson account entity if you don't need cleaning maps for the 360 Eye vacuum. All local devices that are already set up will remain untouched.
+
+Note: When setting up your MyDyson account, please make sure you check your email/spam for the verification code from Dyson.
 
 ### Setup manually
 
