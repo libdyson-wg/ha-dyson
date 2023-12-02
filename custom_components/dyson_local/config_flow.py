@@ -401,7 +401,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except DysonInvalidCredential:
             raise InvalidAuth
         except DysonException as err:
-            _LOGGER.debug(f"Failed to connect to device: {err.__name__}, {err}")
+            _LOGGER.debug(f"Failed to connect to device: {type(err).__name__}, {err}")
             raise CannotConnect
 
 
