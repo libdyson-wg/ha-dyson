@@ -8,6 +8,19 @@ This is a Home Assistant custom integration for Wi-Fi connected Dyson devices, a
 [![HACS Action](https://badgen.net/github/checks/libdyson-wg/ha-dyson/main/HACS%20Action)](https://github.com/libdyson-wg/ha-dyson/actions/workflows/hacs.yaml)
 [![Latest Commit](https://badgen.net/github/last-commit/libdyson-wg/ha-dyson/main)](https://github.com/libdyson-wg/ha-dyson/commit/HEAD)
 
+## Troubleshooting
+
+### Fan connection failures
+
+Please try power-cycling the fan device and try connecting again. 
+
+Dyson fans run an MQTT Broker which this integration connects to as a client. The broker has a connection limit and some devices appear to have a firmware bug where they hold onto dead connections and fill up the connection pool, causing new connections to fail. This behavior has been observed on the following device models, but may also include others:
+
+- TP07 Purifier Cool
+- TP09 Purifier Cool Formaldehyde
+- HP07 Purifier Hot+Cool
+- HP09 Purifier Hot+Cool Formaldehyde
+
 ## Installation
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=libdyson-wg&repository=ha-dyson&category=integration)
