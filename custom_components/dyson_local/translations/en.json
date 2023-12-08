@@ -31,7 +31,8 @@
       },
       "host": {
         "data": {
-          "host": "Device IP Address (Optional)"
+          "host": "Device IP Address (Optional)",
+          "name": "Device Name"
         }
       },
       "email": {
