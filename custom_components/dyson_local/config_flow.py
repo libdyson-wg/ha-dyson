@@ -305,16 +305,12 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle step to set host."""
         errors = {}
         if info is not None:
-            # NOTE: Sometimes, the device is not named. In these situations,
-            # default to using the unique serial number as the name.
-            name = self._device_info.name or self._device_info.serial
-
             try:
                 data = await self._async_get_entry_data(
                     self._device_info.serial,
                     self._device_info.credential,
                     self._device_info.product_type,
-                    name,
+                    info.get(CONF_NAME),
                     info.get(CONF_HOST),
                 )
             except CannotConnect:
@@ -323,15 +319,22 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_find"
             else:
                 return self.async_create_entry(
-                    title=name,
+                    title=info.get(CONF_NAME),
                     data=data,
                 )
+
+        # NOTE: Sometimes, the device is not named. In these situations,
+        # default to using the unique serial number as the name.
+        name = self._device_info.name or self._device_info.serial
 
         info = info or {}
         return self.async_show_form(
             step_id="host",
             data_schema=vol.Schema(
-                {vol.Optional(CONF_HOST, default=info.get(CONF_HOST, "")): str}
+                {
+                    vol.Optional(CONF_HOST, default=info.get(CONF_HOST, "")): str,
+                    vol.Optional(CONF_NAME, default=info.get(CONF_NAME, name)): str,
+                }
             ),
             errors=errors,
         )
