@@ -2,8 +2,8 @@
 
 This is a Home Assistant custom integration for Wi-Fi connected Dyson devices, and is being actively developed. It replaces the Dyson Local and Dyson Cloud integrations by shenxn, which are no longer maintained.
 
-[![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/libdyson-wg/ha-dyson)](https://github.com/libdyson-wg/ha-dyson/releases/)
 [![Latest Release](https://badgen.net/github/release/libdyson-wg/ha-dyson)](https://github.com/libdyson-wg/ha-dyson/releases/)
+[![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/libdyson-wg/ha-dyson)](https://github.com/libdyson-wg/ha-dyson/releases/)
 [![validate](https://badgen.net/github/checks/libdyson-wg/ha-dyson/main/validate)](https://github.com/libdyson-wg/ha-dyson/actions/workflows/hassfest.yaml)
 [![HACS Action](https://badgen.net/github/checks/libdyson-wg/ha-dyson/main/HACS%20Action)](https://github.com/libdyson-wg/ha-dyson/actions/workflows/hacs.yaml)
 [![Latest Commit](https://badgen.net/github/last-commit/libdyson-wg/ha-dyson/main)](https://github.com/libdyson-wg/ha-dyson/commit/HEAD)
