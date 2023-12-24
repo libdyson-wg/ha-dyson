@@ -60,11 +60,11 @@ Once you have installed the integration, navigate to `Settings > Devices` tab, p
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha-dyson)
 
 
-### Setup using device WiFi information
+### Setup using device Wi-Fi information
 
 Note: Some new models released after 2020 do not ship with a Wi-Fi information sticker. They are still supported by this integration, but can only be configured via your MyDyson account. After setting up your devices, your account can be deleted from Home Assistant if you prefer to stay offline.
 
-Find your device WiFi SSID and password on the sticker on your device body or user's manual. Don't fill in your home WiFi information. Note that this method only uses SSID and password to calculate serial, credential, and device type so you still need to setup your device on the official mobile app first.
+Find your device Wi-Fi SSID and password on the sticker on your device body or user's manual. Don't fill in your home Wi-Fi information. Note that this method only uses SSID and password to calculate serial, credential, and device type so you still need to setup your device on the official mobile app first.
 
 ### Setup using your MyDyson account
 
