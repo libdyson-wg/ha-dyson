@@ -9,30 +9,25 @@ from .vendor.libdyson import DysonPureHotCoolLink
 
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
-    CURRENT_HVAC_COOL,
-    CURRENT_HVAC_HEAT,
-    CURRENT_HVAC_IDLE,
-    CURRENT_HVAC_OFF,
+    HVACAction,
     FAN_DIFFUSE,
     FAN_FOCUS,
-    HVAC_MODE_COOL,
-    HVAC_MODE_HEAT,
-    HVAC_MODE_OFF,
-    SUPPORT_FAN_MODE,
-    SUPPORT_TARGET_TEMPERATURE,
+    HVACMode,
+    ClimateEntityFeature
 )
+
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_TEMPERATURE, CONF_NAME, TEMP_CELSIUS
+from homeassistant.const import ATTR_TEMPERATURE, CONF_NAME, UnitOfTemperature
 from homeassistant.core import Callable, HomeAssistant
 
 from . import DysonEntity
 
 _LOGGER = logging.getLogger(__name__)
 
-HVAC_MODES = [HVAC_MODE_OFF, HVAC_MODE_COOL, HVAC_MODE_HEAT]
+HVAC_MODES = [HVACMode.OFF, HVACMode.COOL, HVACMode.HEAT]
 FAN_MODES = [FAN_FOCUS, FAN_DIFFUSE]
-SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE
-SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | SUPPORT_FAN_MODE
+SUPPORT_FLAGS = ClimateEntityFeature.TARGET_TEMPERATURE
+SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | ClimateEntityFeature.FAN_MODE
 
 
 async def async_setup_entry(
@@ -55,10 +50,10 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
     def hvac_mode(self) -> str:
         """Return hvac operation."""
         if not self._device.is_on:
-            return HVAC_MODE_OFF
+            return HVACMode.OFF
         if self._device.heat_mode_is_on:
-            return HVAC_MODE_HEAT
-        return HVAC_MODE_COOL
+            return HVACMode.HEAT
+        return HVACMode.COOL
 
     @property
     def hvac_modes(self) -> List[str]:
@@ -69,12 +64,12 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
     def hvac_action(self) -> str:
         """Return the current running hvac operation."""
         if not self._device.is_on:
-            return CURRENT_HVAC_OFF
+            return HVACAction.OFF
         if self._device.heat_mode_is_on:
             if self._device.heat_status_is_on:
-                return CURRENT_HVAC_HEAT
-            return CURRENT_HVAC_IDLE
-        return CURRENT_HVAC_COOL
+                return HVACAction.HEAT
+            return HVACAction.IDLE
+        return HVACAction.COOL
 
     @property
     def supported_features(self) -> int:
@@ -84,7 +79,7 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
     @property
     def temperature_unit(self) -> str:
         """Return the unit of measurement."""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def target_temperature(self) -> int:
@@ -134,13 +129,13 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
     def set_hvac_mode(self, hvac_mode: str):
         """Set new hvac mode."""
         _LOGGER.debug("Set %s heat mode %s", self.name, hvac_mode)
-        if hvac_mode == HVAC_MODE_OFF:
+        if hvac_mode == HVACMode.OFF:
             self._device.turn_off()
         elif not self._device.is_on:
             self._device.turn_on()
-        if hvac_mode == HVAC_MODE_HEAT:
+        if hvac_mode == HVACMode.HEAT:
             self._device.enable_heat_mode()
-        elif hvac_mode == HVAC_MODE_COOL:
+        elif hvac_mode == HVACMode.COOL:
             self._device.disable_heat_mode()
 
 
