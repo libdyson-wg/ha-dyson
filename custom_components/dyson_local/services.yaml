@@ -17,13 +17,18 @@ set_angle:
 
 set_timer:
   name: Set Timer
-  description: Set the sleep timer.
+  description: Sets, or clears, the timer of a fan (in minutes).
+  target:
+    entity:
+      domain: fan
   fields:
-    entity_id:
-      name: Entity ID
-      description: Name(s) of the entities to set the sleep timer for
-      example: "fan.living_room"
     timer:
-      name: Timer
-      description: The value in minutes to set the timer to, 0 to disable it
-      example: 30
+      name: Minutes
+      description: How many minutes the timer should run for. Set to 0 to disable timer.
+      selector:
+        number:
+          min: 0
+          max: 540
+          step: 1
+          unit_of_measurement: "minutes"
+      required: true
