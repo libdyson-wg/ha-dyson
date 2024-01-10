@@ -30,5 +30,5 @@ set_timer:
           min: 0
           max: 540
           step: 1
-      unit_of_measurement: "minutes"
+          unit_of_measurement: "minutes"
       required: true
