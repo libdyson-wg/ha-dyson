@@ -67,9 +67,9 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
             return HVACAction.OFF
         if self._device.heat_mode_is_on:
             if self._device.heat_status_is_on:
-                return HVACAction.HEAT
+                return HVACAction.HEATING
             return HVACAction.IDLE
-        return HVACAction.COOL
+        return HVACAction.COOLING
 
     @property
     def supported_features(self) -> int:
