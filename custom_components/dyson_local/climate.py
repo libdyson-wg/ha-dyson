@@ -117,13 +117,16 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
     def set_temperature(self, **kwargs):
         """Set new target temperature."""
         target_temp = kwargs.get(ATTR_TEMPERATURE)
+        # Check if a temperature was sent
         if target_temp is None:
             _LOGGER.error("Missing target temperature %s", kwargs)
             return
+        # Limit the target temperature into acceptable range
+        if target_temp < self.min_temp or target_temp > self.max_temp:
+            _LOGGER.warning('Temperature requested is outside min/max range, adjusting')
+            target_temp = min(self.max_temp, target_temp)
+            target_temp = max(self.min_temp, target_temp)
         _LOGGER.debug("Set %s temperature %s", self.name, target_temp)
-        # Limit the target temperature into acceptable range.
-        target_temp = min(self.max_temp, target_temp)
-        target_temp = max(self.min_temp, target_temp)
         self._device.set_heat_target(target_temp + 273)
 
     def set_hvac_mode(self, hvac_mode: str):
