@@ -6,7 +6,7 @@ from .vendor.libdyson import MessageType
 
 from homeassistant.components.humidifier import (
     DEVICE_CLASS_HUMIDIFIER,
-    SUPPORT_MODES,
+    HumidifierEntityFeature,
     HumidifierEntity,
 )
 from homeassistant.components.humidifier.const import MODE_AUTO, MODE_NORMAL
@@ -19,7 +19,7 @@ from .const import DATA_DEVICES, DOMAIN
 
 AVAILABLE_MODES = [MODE_NORMAL, MODE_AUTO]
 
-SUPPORTED_FEATURES = SUPPORT_MODES
+SUPPORTED_FEATURES = HumidifierEntityFeature.MODES
 
 
 async def async_setup_entry(
@@ -40,7 +40,7 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
     _attr_available_modes = AVAILABLE_MODES
     _attr_max_humidity = 70
     _attr_min_humidity = 30
-    _attr_supported_features = SUPPORT_MODES
+    _attr_supported_features = HumidifierEntityFeature.MODES
 
     @property
     def is_on(self) -> bool:

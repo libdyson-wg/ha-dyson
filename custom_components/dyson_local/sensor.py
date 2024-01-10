@@ -22,9 +22,10 @@ from homeassistant.const import (
     CONCENTRATION_PARTS_PER_MILLION,
     CONF_NAME,
     PERCENTAGE,
-    TEMP_CELSIUS,
-    TIME_HOURS,
+    UnitOfTemperature,
+    UnitOfTime,
 )
+
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import (
@@ -144,7 +145,7 @@ class DysonFilterLifeSensor(DysonSensor):
     _SENSOR_NAME = "Filter Life"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
-    _attr_native_unit_of_measurement = TIME_HOURS
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
 
     @property
     def native_value(self) -> int:
@@ -204,7 +205,7 @@ class DysonNextDeepCleanSensor(DysonSensor):
     _SENSOR_NAME = "Next Deep Clean"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
-    _attr_native_unit_of_measurement = TIME_HOURS
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
 
     @property
     def native_value(self) -> Optional[int]:
@@ -246,7 +247,7 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "temperature"
     _SENSOR_NAME = "Temperature"
     _attr_device_class = SensorDeviceClass.TEMPERATURE
-    _attr_native_unit_of_measurement = TEMP_CELSIUS
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
