@@ -5,7 +5,7 @@ from typing import Callable, Optional
 from .vendor.libdyson import MessageType
 
 from homeassistant.components.humidifier import (
-    DEVICE_CLASS_HUMIDIFIER,
+    HumidifierDeviceClass,
     HumidifierEntityFeature,
     HumidifierEntity,
 )
@@ -36,7 +36,7 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
 
     _MESSAGE_TYPE = MessageType.STATE
 
-    _attr_device_class = DEVICE_CLASS_HUMIDIFIER
+    _attr_device_class = HumidifierDeviceClass.HUMIDIFIER
     _attr_available_modes = AVAILABLE_MODES
     _attr_max_humidity = 70
     _attr_min_humidity = 30
