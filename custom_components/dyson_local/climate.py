@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 
 HVAC_MODES = [HVACMode.OFF, HVACMode.COOL, HVACMode.HEAT]
 FAN_MODES = [FAN_FOCUS, FAN_DIFFUSE]
-SUPPORT_FLAGS = ClimateEntityFeature.TARGET_TEMPERATURE
+SUPPORT_FLAGS = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
 SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | ClimateEntityFeature.FAN_MODE
 
 
