@@ -76,6 +76,12 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
         """Return the list of supported features."""
         return SUPPORT_FLAGS
 
+    def turn_on(self) -> None:
+        self._device.turn_on()
+
+    def turn_off(self) -> None:
+        self._device.turn_off()
+
     @property
     def temperature_unit(self) -> str:
         """Return the unit of measurement."""
