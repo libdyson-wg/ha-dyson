@@ -35,6 +35,7 @@ API_PATH_DEVICES = "/v2/provisioningservice/manifest"
 
 FILE_PATH = pathlib.Path(__file__).parent.absolute()
 
+
 class HTTPBearerAuth(AuthBase):
     """Attaches HTTP Bearder Authentication to the given Request object."""
 

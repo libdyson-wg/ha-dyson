@@ -9,6 +9,7 @@ from typing import List, Optional
 from .vendor.libdyson import (
     Dyson360Eye,
     Dyson360Heurist,
+    Dyson360VisNav,
     DysonPureHotCool,
     DysonPureHotCoolLink,
     DysonPurifierHumidifyCool,
@@ -113,7 +114,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_DEVICE_TYPE],
     )
 
-    if not isinstance(device, Dyson360Eye) and not isinstance(device, Dyson360Heurist):
+    if (not isinstance(device, Dyson360Eye)
+            and not isinstance(device, Dyson360Heurist)
+            and not isinstance(device, Dyson360VisNav)):
         # Set up coordinator
         async def async_update_data():
             """Poll environmental data from the device."""
@@ -203,7 +206,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 @callback
 def _async_get_platforms(device: DysonDevice) -> List[str]:
-    if isinstance(device, Dyson360Eye) or isinstance(device, Dyson360Heurist):
+    if (isinstance(device, Dyson360Eye)
+            or isinstance(device, Dyson360Heurist)
+            or isinstance(device, Dyson360VisNav)):
         return ["binary_sensor", "sensor", "vacuum"]
     platforms = ["fan", "select", "sensor", "switch"]
     if isinstance(device, DysonPureHotCool):
