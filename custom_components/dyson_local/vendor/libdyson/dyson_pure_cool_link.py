@@ -7,6 +7,10 @@ from .dyson_device import DysonFanDevice
 class DysonPureCoolLink(DysonFanDevice):
     """Dyson Pure Cool Link device."""
 
+    def __init__(self, serial: str, credential: str, device_type: str):
+        super().__init__(serial, credential, device_type)
+        self.preset_mode = "FAN"
+
     @property
     def fan_mode(self) -> str:
         """Return the fan mode of the fan."""
@@ -20,7 +24,11 @@ class DysonPureCoolLink(DysonFanDevice):
     @property
     def auto_mode(self) -> bool:
         """Return auto mode status."""
-        return self.fan_mode == "AUTO"
+        if not self.is_on:
+            return self.preset_mode == "AUTO"
+        else:
+            self.preset_mode = self.fan_mode
+            return self.preset_mode == "AUTO"
 
     @property
     def oscillation(self) -> bool:
@@ -49,7 +57,7 @@ class DysonPureCoolLink(DysonFanDevice):
 
     def turn_on(self) -> None:
         """Turn on the device."""
-        self._set_configuration(fmod="FAN")
+        self._set_configuration(fmod=self.preset_mode)
 
     def turn_off(self) -> None:
         """Turn off the device."""
@@ -60,10 +68,12 @@ class DysonPureCoolLink(DysonFanDevice):
 
     def enable_auto_mode(self) -> None:
         """Turn on auto mode."""
+        self.preset_mode = "AUTO"
         self._set_configuration(fmod="AUTO")
 
     def disable_auto_mode(self) -> None:
         """Turn off auto mode."""
+        self.preset_mode = "FAN"
         self._set_configuration(fmod="FAN")
 
     def enable_oscillation(self) -> None:
