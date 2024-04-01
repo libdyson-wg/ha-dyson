@@ -22,6 +22,7 @@ DEVICE_TYPE_PURIFIER_BIG_QUIET = "664"  # BP02, BP03, and BP04
 DEVICE_TYPE_NAMES = {
     DEVICE_TYPE_360_EYE: "360 Eye robot vacuum",
     DEVICE_TYPE_360_HEURIST: "360 Heurist robot vacuum",
+    DEVICE_TYPE_360_VIS_NAV: "360 Vis Nav robot vacuum",
     DEVICE_TYPE_PURE_COOL: "Pure Cool",
     DEVICE_TYPE_PURIFIER_COOL_K: "Purifier Cool",
     DEVICE_TYPE_PURIFIER_COOL_E: "Purifier Cool",
