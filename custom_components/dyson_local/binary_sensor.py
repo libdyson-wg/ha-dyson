@@ -2,7 +2,12 @@
 
 from typing import Callable
 
-from .vendor.libdyson import Dyson360Eye, Dyson360Heurist, DysonPureHotCoolLink
+from .vendor.libdyson import (
+    Dyson360Eye,
+    Dyson360Heurist,
+    Dyson360VisNav,
+    DysonPureHotCoolLink,
+)
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -29,6 +34,13 @@ async def async_setup_entry(
     if isinstance(device, Dyson360Eye):
         entities.append(DysonVacuumBatteryChargingSensor(device, name))
     if isinstance(device, Dyson360Heurist):
+        entities.extend(
+            [
+                DysonVacuumBatteryChargingSensor(device, name),
+                g(device, name),
+            ]
+        )
+    if isinstance(device, Dyson360VisNav):
         entities.extend(
             [
                 DysonVacuumBatteryChargingSensor(device, name),
@@ -68,6 +80,32 @@ class DysonVacuumBatteryChargingSensor(DysonEntity, BinarySensorEntity):
 
 class Dyson360HeuristBinFullSensor(DysonEntity, BinarySensorEntity):
     """Dyson 360 Heurist bin full sensor."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    @property
+    def is_on(self) -> bool:
+        """Return if the sensor is on."""
+        return self._device.is_bin_full
+
+    @property
+    def icon(self) -> str:
+        """Return the sensor icon."""
+        return ICON_BIN_FULL
+
+    @property
+    def sub_name(self) -> str:
+        """Return the name of the sensor."""
+        return "Bin Full"
+
+    @property
+    def sub_unique_id(self):
+        """Return the sensor's unique id."""
+        return "bin_full"
+
+
+class Dyson360VisNavBinFullSensor(DysonEntity, BinarySensorEntity):
+    """Dyson 360 VisNav bin full sensor."""
 
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 

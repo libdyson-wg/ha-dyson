@@ -5,6 +5,7 @@ from typing import Callable, Union, Optional
 from .vendor.libdyson import (
     Dyson360Eye,
     Dyson360Heurist,
+    Dyson360VisNav,
     DysonDevice,
     DysonPureCoolLink,
     DysonPurifierHumidifyCool,
@@ -44,7 +45,7 @@ async def async_setup_entry(
     """Set up Dyson sensor from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
-    if isinstance(device, Dyson360Eye) or isinstance(device, Dyson360Heurist):
+    if isinstance(device, Dyson360Eye) or isinstance(device, Dyson360Heurist) or isinstance(device, Dyson360VisNav):
         entities = [DysonBatterySensor(device, name)]
     else:
         coordinator = hass.data[DOMAIN][DATA_COORDINATORS][config_entry.entry_id]

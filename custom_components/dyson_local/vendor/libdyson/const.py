@@ -3,6 +3,7 @@ from enum import Enum, auto
 
 DEVICE_TYPE_360_EYE = "N223"
 DEVICE_TYPE_360_HEURIST = "276"
+DEVICE_TYPE_360_VIS_NAV = "277"
 DEVICE_TYPE_PURE_COOL_LINK_DESK = "469"  # DP01? DP02? This one's a bit older, and scraping the Dyson website is unclear
 DEVICE_TYPE_PURE_COOL_DESK = "520"  # AM06? This one's also a bit older, and also hard to scrape off the Dyson website
 DEVICE_TYPE_PURE_COOL_LINK = "475"  # TP02
