@@ -37,7 +37,7 @@ async def async_setup_entry(
         entities.extend(
             [
                 DysonVacuumBatteryChargingSensor(device, name),
-                g(device, name),
+                Dyson360VisNavBinFullSensor(device, name),
             ]
         )
     if isinstance(device, Dyson360VisNav):

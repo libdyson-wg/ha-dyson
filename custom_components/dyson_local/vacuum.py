@@ -4,8 +4,10 @@ from typing import Any, Callable, List, Mapping
 
 from .vendor.libdyson import (
     Dyson360Eye,
+    Dyson360VisNav,
     VacuumEyePowerMode,
     VacuumHeuristPowerMode,
+    VacuumVisNavPowerMode,
     VacuumState,
 )
 
@@ -120,6 +122,15 @@ HEURIST_POWER_MODE_ENUM_TO_STR = {
 HEURIST_POWER_MODE_STR_TO_ENUM = {
     value: key for key, value in HEURIST_POWER_MODE_ENUM_TO_STR.items()
 }
+VIS_NAV_POWER_MODE_ENUM_TO_STR = {
+    VacuumVisNavPowerMode.AUTO: "Auto",
+    VacuumVisNavPowerMode.QUICK: "Quick",
+    VacuumVisNavPowerMode.QUIET: "Quiet",
+    VacuumVisNavPowerMode.BOOST: "Boost",
+}
+VIS_NAV_POWER_MODE_STR_TO_ENUM = {
+    value: key for key, value in HEURIST_POWER_MODE_ENUM_TO_STR.items()
+}
 
 ATTR_POSITION = "position"
 
@@ -132,6 +143,8 @@ async def async_setup_entry(
     name = config_entry.data[CONF_NAME]
     if isinstance(device, Dyson360Eye):
         entity = Dyson360EyeEntity(device, name)
+    elif isinstance(device, Dyson360VisNav):  # Dyson360VisNav
+        entity = Dyson360VisNavEntity(device, name)
     else:  # Dyson360Heurist
         entity = Dyson360HeuristEntity(device, name)
     async_add_entities([entity])
@@ -230,3 +243,21 @@ class Dyson360HeuristEntity(DysonVacuumEntity):
     def set_fan_speed(self, fan_speed: str, **kwargs) -> None:
         """Set fan speed."""
         self._device.set_default_power_mode(HEURIST_POWER_MODE_STR_TO_ENUM[fan_speed])
+
+
+class Dyson360VisNavEntity(Dyson360HeuristEntity):
+    """Dyson 360 Vis Nav robot vacuum entity."""
+
+    @property
+    def fan_speed(self) -> str:
+        """Return the fan speed of the vacuum cleaner."""
+        return VIS_NAV_POWER_MODE_ENUM_TO_STR[self._device.current_power_mode]
+
+    @property
+    def fan_speed_list(self) -> List[str]:
+        """Get the list of available fan speed steps of the vacuum cleaner."""
+        return list(VIS_NAV_POWER_MODE_STR_TO_ENUM.keys())
+
+    def set_fan_speed(self, fan_speed: str, **kwargs) -> None:
+        """Set fan speed."""
+        self._device.set_default_power_mode(VIS_NAV_POWER_MODE_STR_TO_ENUM[fan_speed])

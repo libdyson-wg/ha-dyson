@@ -130,6 +130,15 @@ class VacuumHeuristPowerMode(Enum):
     MAX = "3"
 
 
+class VacuumVisNavPowerMode(Enum):
+    """Dyson 360 Heurist power mode."""
+
+    AUTO = "1"
+    QUICK = "2"
+    QUIET = "3"
+    BOOST = "4"
+
+
 class CleaningType(Enum):
     """Vacuum cleaning type."""
 
