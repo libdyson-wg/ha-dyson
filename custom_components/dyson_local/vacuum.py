@@ -70,6 +70,7 @@ DYSON_STATUS = {
     VacuumState.MAPPING_NEEDS_CHARGE: "Mapping - Needs charging",
     VacuumState.MAPPING_PAUSED: "Mapping - Paused",
     VacuumState.MAPPING_RUNNING: "Mapping - Running",
+    VacuumState.MACHINE_OFF: "Off",
 }
 
 DYSON_STATES = {
@@ -105,6 +106,7 @@ DYSON_STATES = {
     VacuumState.MAPPING_NEEDS_CHARGE: STATE_RETURNING,
     VacuumState.MAPPING_PAUSED: STATE_PAUSED,
     VacuumState.MAPPING_RUNNING: STATE_CLEANING,
+    VacuumState.MACHINE_OFF: STATE_DOCKED,
 }
 
 EYE_POWER_MODE_ENUM_TO_STR = {
