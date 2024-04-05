@@ -28,6 +28,7 @@ from .const import HumidifyOscillationMode  # noqa: F401
 from .const import MessageType  # noqa: F401
 from .const import VacuumEyePowerMode  # noqa: F401
 from .const import VacuumHeuristPowerMode  # noqa: F401
+from .const import VacuumVisNavPowerMode  # noqa: F401
 from .const import VacuumState  # noqa: F401
 from .const import WaterHardness  # noqa: F401
 from .discovery import DysonDiscovery  # noqa: F401
@@ -83,3 +84,4 @@ def get_device(serial: str, credential: str, device_type: str) -> Optional[Dyson
     }:
         return DysonBigQuiet(serial, credential, device_type)
     return None
+

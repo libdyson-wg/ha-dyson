@@ -113,6 +113,7 @@ class VacuumState(Enum):
     MAPPING_NEEDS_CHARGE = "MAPPING_NEEDS_CHARGE"
     MAPPING_PAUSED = "MAPPING_PAUSED"
     MAPPING_RUNNING = "MAPPING_RUNNING"
+    MACHINE_OFF = "MACHINE_OFF"
 
 
 class VacuumEyePowerMode(Enum):
@@ -128,6 +129,15 @@ class VacuumHeuristPowerMode(Enum):
     QUIET = "1"
     HIGH = "2"
     MAX = "3"
+
+
+class VacuumVisNavPowerMode(Enum):
+    """Dyson 360 Heurist power mode."""
+
+    AUTO = "1"
+    QUICK = "2"
+    QUIET = "3"
+    BOOST = "4"
 
 
 class CleaningType(Enum):
