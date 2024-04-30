@@ -131,7 +131,7 @@ VIS_NAV_POWER_MODE_ENUM_TO_STR = {
     VacuumVisNavPowerMode.BOOST: "Boost",
 }
 VIS_NAV_POWER_MODE_STR_TO_ENUM = {
-    value: key for key, value in HEURIST_POWER_MODE_ENUM_TO_STR.items()
+    value: key for key, value in VIS_NAV_POWER_MODE_ENUM_TO_STR.items()
 }
 
 ATTR_POSITION = "position"
