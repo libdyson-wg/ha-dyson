@@ -85,7 +85,15 @@ This is a **custom integration** not a **custom add-on**. You need to install [H
 
 ### How do I migrate from [shenxn/ha-dyson](https://github.com/shenxn/ha-dyson)?
 
-If you used Dyson Local from shenxn, you can migrate fairly easily:
+#### Before we look into the migration options, a note on sensors for Volatile Organic Compounts and Nitrogen Dioxide
+
+There's a LOT of reading in https://github.com/libdyson-wg/ha-dyson/issues/4 if you want the full context, and some additional summaries in https://github.com/libdyson-wg/ha-dyson/issues/89 and https://github.com/libdyson-wg/ha-dyson/issues/127.
+
+The short answer here is: while we're really grateful to Shen and the original set of contributors whose shoulders we're standing on here, the original VOC and NO2 sensors were incorrectly reporting µg/m³, when the sensor data from the device is actually an index. Unfortunately, the fan devices do not give us any raw sensor numbers, and we don't know the proprietary calculations that Dyson uses to turn their raw sensor data into the index value.
+
+As a result, this integration has removed the old sensor.device_volatile_organic_compounds entities. We've implemented new sensor.device_volatile_organic_compounds_index entities that correctly reflect the data.
+
+You can delete the old entities, which should now be unavailable, from your Home Assistant instance.
 
 #### Experimental no-reconfiguration migration
 
