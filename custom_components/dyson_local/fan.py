@@ -52,7 +52,13 @@ SUPPORTED_PRESET_MODES = [PRESET_MODE_AUTO, PRESET_MODE_NORMAL]
 
 SPEED_RANGE = (1, 10)
 
-COMMON_FEATURES = FanEntityFeature.OSCILLATE | FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
+COMMON_FEATURES = (
+    FanEntityFeature.OSCILLATE
+    | FanEntityFeature.SET_SPEED
+    | FanEntityFeature.PRESET_MODE
+    | FanEntityFeature.TURN_ON
+    | FanEntityFeature.TURN_OFF
+)
 
 
 async def async_setup_entry(
@@ -81,6 +87,8 @@ async def async_setup_entry(
 
 class DysonFanEntity(DysonEntity, FanEntity):
     """Dyson fan entity base class."""
+
+    _enable_turn_on_off_backwards_compatibility = False
 
     _MESSAGE_TYPE = MessageType.STATE
 
