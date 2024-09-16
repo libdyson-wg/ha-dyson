@@ -178,21 +178,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload Dyson local."""
-    device = hass.data[DOMAIN][DATA_DEVICES][entry.entry_id]
-    ok = all(
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, component)
-                for component in _async_get_platforms(device)
-            ]
-        )
-    )
-    if ok:
+    device: DysonDevice = hass.data[DOMAIN][DATA_DEVICES][entry.entry_id]
+
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, _async_get_platforms(device))
+
+    if unload_ok:
         hass.data[DOMAIN][DATA_DEVICES].pop(entry.entry_id)
         hass.data[DOMAIN][DATA_COORDINATORS].pop(entry.entry_id)
         await hass.async_add_executor_job(device.disconnect)
         # TODO: stop discovery
-    return ok
+    return unload_ok
 
 
 @callback
