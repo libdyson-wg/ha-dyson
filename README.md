@@ -62,7 +62,7 @@ Once you have installed the integration, navigate to `Settings > Devices` tab, p
 
 ### Setup using device Wi-Fi information
 
-Note: Some new models released after 2020 do not ship with a Wi-Fi information sticker. They are still supported by this integration, but can only be configured via your MyDyson account. After setting up your devices, your account can be deleted from Home Assistant if you prefer to stay offline.
+Note: New models released after 2020 do not ship with a Wi-Fi information sticker. These models are still supported by this integration, but can only be configured via your MyDyson account or with the manual setup described below. After setting up your devices, your account can be deleted from Home Assistant if you prefer to stay offline.
 
 Find your device Wi-Fi SSID and password on the sticker on your device body or user's manual. Don't fill in your home Wi-Fi information. Note that this method only uses SSID and password to calculate serial, credential, and device type so you still need to setup your device on the official mobile app first.
 
@@ -74,7 +74,7 @@ Note: When setting up your MyDyson account, please make sure you check your emai
 
 ### Setup manually
 
-If you want to manually set up a Dyson device, you need to get credentials first. Clone or download https://github.com/libdyson-wg/libdyson-neon, then use `python3 get_devices.py` to do that. You may need to install some dependencies using `pip3 install -r requirements.txt`.
+If you want to manually set up a Dyson device, you need to get credentials first. You can use [opendyson](https://github.com/libdyson-wg/opendyson) to connect to the Dyson API and fetch the required device credentials, then use those credentials in the manual setup for your device on Home Assistant.
 
 ## FAQ
 
