@@ -32,12 +32,13 @@ API_PATH_EMAIL_VERIFY = "/v3/userregistration/email/verify"
 API_PATH_MOBILE_REQUEST = "/v3/userregistration/mobile/auth"
 API_PATH_MOBILE_VERIFY = "/v3/userregistration/mobile/verify"
 API_PATH_DEVICES = "/v2/provisioningservice/manifest"
+APT_PATH_IOT_CREDENTIALS = "/v2/authorize/iot-credentials"
 
 FILE_PATH = pathlib.Path(__file__).parent.absolute()
 
 
 class HTTPBearerAuth(AuthBase):
-    """Attaches HTTP Bearer Authentication to the given Request object."""
+    """Attaches HTTP Bearder Authentication to the given Request object."""
 
     def __init__(self, token):
         """Initialize the auth."""
@@ -211,6 +212,34 @@ class DysonAccount:
             devices.append(DysonDeviceInfo.from_raw(raw))
         return devices
 
+    def get_iot_details(self, serial: str) -> dict:
+        """Fetch IoT details for a device."""
+        try:
+            self.provision_api()
+            if not self._auth_info or "token" not in self._auth_info:
+                raise DysonAuthRequired("No valid authentication token found.")
+
+            token = self._auth_info["token"]
+
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "User-Agent": "android client",
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "Serial": serial
+            }
+
+            url = f"{self._HOST}APT_PATH_IOT_CREDENTIALS"
+            response = requests.post(url, headers=headers, json=payload, timeout=10)
+            response.raise_for_status()
+
+            return response.json()
+        except requests.HTTPError as e:
+            raise DysonNetworkError(f"HTTP error while fetching IoT details for {serial}: {e}")
+        except requests.RequestException as e:
+            raise DysonNetworkError(f"Failed to get IoT details for {serial}: {e}")
 
 class DysonAccountCN(DysonAccount):
     """Dyson account in Mainland China."""
