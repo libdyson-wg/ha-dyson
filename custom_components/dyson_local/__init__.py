@@ -111,9 +111,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_DEVICE_TYPE],
     )
 
-    if (not isinstance(device, Dyson360Eye)
-            and not isinstance(device, Dyson360Heurist)
-            and not isinstance(device, Dyson360VisNav)):
+    if isinstance(device, (Dyson360Eye, Dyson360Heurist, Dyson360VisNav)):
+        coordinator = None
+    else:
         # Set up coordinator
         async def async_update_data():
             """Poll environmental data from the device."""
@@ -129,8 +129,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             update_method=async_update_data,
             update_interval=ENVIRONMENTAL_DATA_UPDATE_INTERVAL,
         )
-    else:
-        coordinator = None
 
     def setup_entry(host: str, is_discovery: bool = True) -> bool:
         try:
