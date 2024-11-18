@@ -37,7 +37,7 @@ FILE_PATH = pathlib.Path(__file__).parent.absolute()
 
 
 class HTTPBearerAuth(AuthBase):
-    """Attaches HTTP Bearder Authentication to the given Request object."""
+    """Attaches HTTP Bearer Authentication to the given Request object."""
 
     def __init__(self, token):
         """Initialize the auth."""
