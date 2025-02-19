@@ -55,12 +55,12 @@ class DysonPureCoolBase(DysonFanDevice):
     @property
     def particulate_matter_2_5(self):
         """Return PM 2.5 in micro grams per cubic meter."""
-        return int(self._get_environmental_field_value("pm25"))
+        return int(self._get_environmental_field_value("p25r") or self._get_environmental_field_value("pm25"))
 
     @property
     def particulate_matter_10(self):
         """Return PM 2.5 in micro grams per cubic meter."""
-        return int(self._get_environmental_field_value("pm10"))
+        return int(self._get_environmental_field_value("p10r") or self._get_environmental_field_value("pm10"))
 
     @property
     def volatile_organic_compounds(self) -> float:
