@@ -82,7 +82,12 @@ class DysonBigQuiet(DysonFanDevice):
 
     def set_tilt(self, tilt: int) -> None:
         """Set the tilt for the device"""
-        self._set_configuration(otal=f"{tilt:04d}", otau=f"{tilt:04d}")
+        if tilt == 359:
+            mode = "BRZE"
+        else:
+            mode = "CUST"
+
+        self._set_configuration(otal=f"{tilt:04d}", otau=f"{tilt:04d}", anct=mode)
 
     def _set_speed(self, speed: int) -> None:
         self._set_configuration(fpwr="ON", fnsp=f"{speed:04d}")
