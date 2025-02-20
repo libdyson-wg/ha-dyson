@@ -70,6 +70,15 @@ class HumidifyOscillationMode(Enum):
     CUST = "CUST"
 
 
+class Tilt(Enum):
+    """Pure Humidify+Cool oscillation mode."""
+
+    DEGREE_0 = "0000"
+    DEGREE_25 = "0025"
+    DEGREE_50 = "0050"
+    BREEZE = "0359"
+
+
 class WaterHardness(Enum):
     """Water Hardness."""
 
@@ -113,7 +122,6 @@ class VacuumState(Enum):
     MAPPING_NEEDS_CHARGE = "MAPPING_NEEDS_CHARGE"
     MAPPING_PAUSED = "MAPPING_PAUSED"
     MAPPING_RUNNING = "MAPPING_RUNNING"
-    MACHINE_OFF = "MACHINE_OFF"
 
 
 class VacuumEyePowerMode(Enum):

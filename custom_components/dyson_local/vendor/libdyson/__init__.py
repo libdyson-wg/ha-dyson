@@ -25,6 +25,7 @@ from .const import CleaningMode  # noqa: F401
 from .const import CleaningType  # noqa: F401
 from .const import DEVICE_TYPE_NAMES  # noqa: F401
 from .const import HumidifyOscillationMode  # noqa: F401
+from .const import Tilt  # noqa: F401
 from .const import MessageType  # noqa: F401
 from .const import VacuumEyePowerMode  # noqa: F401
 from .const import VacuumHeuristPowerMode  # noqa: F401
