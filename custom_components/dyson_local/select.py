@@ -45,10 +45,10 @@ OSCILLATION_MODE_STR_TO_ENUM = {
 }
 
 TILT_ENUM_TO_STR = {
-    Tilt.DEGREE_0: "0°",
-    Tilt.DEGREE_25: "25°",
-    Tilt.DEGREE_50: "50°",
-    Tilt.BREEZE: "Breeze",
+    0: "0°",
+    25: "25°",
+    50: "50°",
+    359: "Breeze",
 }
 
 TILT_STR_TO_ENUM = {
