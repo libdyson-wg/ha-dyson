@@ -150,8 +150,8 @@ class DysonTiltSelect(DysonEntity, SelectEntity):
     """Tilt for supported models."""
 
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_icon = "mdi:sync"
-    _attr_options = list(OSCILLATION_MODE_STR_TO_ENUM.keys())
+    _attr_icon = "mdi:acute-angle"
+    _attr_options = list(TILT_STR_TO_ENUM.keys())
 
     @property
     def current_option(self) -> str:
