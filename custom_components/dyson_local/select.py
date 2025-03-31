@@ -38,6 +38,7 @@ OSCILLATION_MODE_ENUM_TO_STR = {
     HumidifyOscillationMode.DEGREE_45: "45°",
     HumidifyOscillationMode.DEGREE_90: "90°",
     HumidifyOscillationMode.BREEZE: "Breeze",
+    HumidifyOscillationMode.CUST: "Custom",
 }
 
 OSCILLATION_MODE_STR_TO_ENUM = {
