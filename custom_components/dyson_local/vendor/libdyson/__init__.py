@@ -8,6 +8,7 @@ from .const import (
     DEVICE_TYPE_PURE_COOL,
     DEVICE_TYPE_PURIFIER_COOL_E,
     DEVICE_TYPE_PURIFIER_COOL_K,
+    DEVICE_TYPE_PURIFIER_COOL_M,
     DEVICE_TYPE_PURE_COOL_DESK,
     DEVICE_TYPE_PURE_COOL_LINK,
     DEVICE_TYPE_PURE_COOL_LINK_DESK,
@@ -63,6 +64,7 @@ def get_device(serial: str, credential: str, device_type: str) -> Optional[Dyson
         DEVICE_TYPE_PURE_COOL,
         DEVICE_TYPE_PURIFIER_COOL_K,
         DEVICE_TYPE_PURIFIER_COOL_E,
+        DEVICE_TYPE_PURIFIER_COOL_M,
         DEVICE_TYPE_PURE_COOL_DESK,
     ]:
         return DysonPureCool(serial, credential, device_type)
