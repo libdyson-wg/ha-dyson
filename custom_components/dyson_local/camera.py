@@ -73,8 +73,8 @@ class DysonCleaningMapEntity(Camera):
         """Return entity icon."""
         return "mdi:map"
 
-    def camera_image(self):
-        """Return cleaning map."""
+    def camera_image(self, width=None, height=None):
+        """Return cleaning map. Width and height are ignored."""
         return self._image
 
     def update(self):
