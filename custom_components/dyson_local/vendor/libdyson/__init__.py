@@ -15,6 +15,7 @@ from .const import (
     DEVICE_TYPE_PURE_HOT_COOL,
     DEVICE_TYPE_PURIFIER_HOT_COOL_E,
     DEVICE_TYPE_PURIFIER_HOT_COOL_K,
+    DEVICE_TYPE_PURIFIER_HOT_COOL_M,
     DEVICE_TYPE_PURE_HOT_COOL_LINK,
     DEVICE_TYPE_PURE_HUMIDIFY_COOL,
     DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_E,
@@ -74,6 +75,7 @@ def get_device(serial: str, credential: str, device_type: str) -> Optional[Dyson
         DEVICE_TYPE_PURE_HOT_COOL,
         DEVICE_TYPE_PURIFIER_HOT_COOL_E,
         DEVICE_TYPE_PURIFIER_HOT_COOL_K,
+        DEVICE_TYPE_PURIFIER_HOT_COOL_M,
     ]:
         return DysonPureHotCool(serial, credential, device_type)
     if device_type in [
