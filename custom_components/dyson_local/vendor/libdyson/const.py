@@ -18,6 +18,7 @@ DEVICE_TYPE_PURE_HOT_COOL_LINK = "455"  # HP02
 DEVICE_TYPE_PURE_HOT_COOL = "527"  # HP04, HP07, HP09 - all variants merged, use same DysonPureHotCool class
 DEVICE_TYPE_PURIFIER_HOT_COOL_E = "527E"  # Deprecated: use DEVICE_TYPE_PURE_HOT_COOL instead (kept for MQTT topic compatibility)
 DEVICE_TYPE_PURIFIER_HOT_COOL_K = "527K"  # Deprecated: use DEVICE_TYPE_PURE_HOT_COOL instead (kept for MQTT topic compatibility)
+DEVICE_TYPE_PURIFIER_HOT_COOL_M = "527M"  # Deprecated: use DEVICE_TYPE_PURE_HOT_COOL instead (kept for MQTT topic compatibility)
 DEVICE_TYPE_PURIFIER_BIG_QUIET = "664"  # BP02, BP03, and BP04
 
 DEVICE_TYPE_NAMES = {
