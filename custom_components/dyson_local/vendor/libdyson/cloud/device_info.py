@@ -147,11 +147,12 @@ def map_product_type_to_device_type(product_type: str, serial: Optional[str] = N
             combined_type = product_type + variant_upper
             _LOGGER.debug("Checking variant combination: %s + %s = %s", product_type, variant_upper, combined_type)
             
-            # Return the combined type (e.g., "438M") for proper MQTT topic construction
-            # This will map to the correct deprecated device type constant (e.g., DEVICE_TYPE_PURIFIER_COOL_M = "438M")
-            # which will create the right device class and use the variant-specific MQTT topic
-            _LOGGER.debug("Using variant-specific device type for MQTT: %s", combined_type)
-            return combined_type
+            # Only return the combined type if it's a known variant
+            if combined_type in CLOUD_PRODUCT_TYPE_TO_DEVICE_TYPE:
+                _LOGGER.debug("Using variant-specific device type for MQTT: %s", combined_type)
+                return combined_type
+            else:
+                _LOGGER.debug("Unknown variant combination %s, falling back to base type", combined_type)
         
         # Try direct variant mapping
         if variant_upper in CLOUD_PRODUCT_TYPE_TO_DEVICE_TYPE:
