@@ -50,43 +50,58 @@ from .utils import get_mqtt_info_from_wifi_info  # noqa: F401
 
 def get_device(serial: str, credential: str, device_type: str) -> Optional[DysonDevice]:
     """Get a new DysonDevice instance."""
+    import logging
+    _LOGGER = logging.getLogger(__name__)
+    
+    _LOGGER.debug("Creating device: serial=%s, device_type=%s", serial, device_type)
+    
     if device_type == DEVICE_TYPE_360_EYE:
+        _LOGGER.debug("Creating Dyson360Eye device")
         return Dyson360Eye(serial, credential)
     if device_type == DEVICE_TYPE_360_HEURIST:
+        _LOGGER.debug("Creating Dyson360Heurist device")
         return Dyson360Heurist(serial, credential)
     if device_type == DEVICE_TYPE_360_VIS_NAV:
+        _LOGGER.debug("Creating Dyson360VisNav device")
         return Dyson360VisNav(serial, credential)
     if device_type in [
         DEVICE_TYPE_PURE_COOL_LINK_DESK,
         DEVICE_TYPE_PURE_COOL_LINK,
     ]:
+        _LOGGER.debug("Creating DysonPureCoolLink device")
         return DysonPureCoolLink(serial, credential, device_type)
     if device_type in [
         DEVICE_TYPE_PURE_COOL,
-        DEVICE_TYPE_PURIFIER_COOL_K,
-        DEVICE_TYPE_PURIFIER_COOL_E,
-        DEVICE_TYPE_PURIFIER_COOL_M,
+        DEVICE_TYPE_PURIFIER_COOL_K,  # Deprecated - backward compatibility
+        DEVICE_TYPE_PURIFIER_COOL_E,  # Deprecated - backward compatibility
+        DEVICE_TYPE_PURIFIER_COOL_M,  # Deprecated - backward compatibility
         DEVICE_TYPE_PURE_COOL_DESK,
     ]:
+        _LOGGER.debug("Creating DysonPureCool device")
         return DysonPureCool(serial, credential, device_type)
     if device_type == DEVICE_TYPE_PURE_HOT_COOL_LINK:
+        _LOGGER.debug("Creating DysonPureHotCoolLink device")
         return DysonPureHotCoolLink(serial, credential, device_type)
     if device_type in [
         DEVICE_TYPE_PURE_HOT_COOL,
-        DEVICE_TYPE_PURIFIER_HOT_COOL_E,
-        DEVICE_TYPE_PURIFIER_HOT_COOL_K,
-        DEVICE_TYPE_PURIFIER_HOT_COOL_M,
+        DEVICE_TYPE_PURIFIER_HOT_COOL_E,  # Deprecated - backward compatibility
+        DEVICE_TYPE_PURIFIER_HOT_COOL_K,  # Deprecated - backward compatibility
     ]:
+        _LOGGER.debug("Creating DysonPureHotCool device")
         return DysonPureHotCool(serial, credential, device_type)
     if device_type in [
         DEVICE_TYPE_PURE_HUMIDIFY_COOL,
-        DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_K,
-        DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_E,
+        DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_K,  # Deprecated - backward compatibility
+        DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_E,  # Deprecated - backward compatibility
     ]:
+        _LOGGER.debug("Creating DysonPurifierHumidifyCool device")
         return DysonPurifierHumidifyCool(serial, credential, device_type)
     if device_type in {
         DEVICE_TYPE_PURIFIER_BIG_QUIET,
     }:
+        _LOGGER.debug("Creating DysonBigQuiet device")
         return DysonBigQuiet(serial, credential, device_type)
+    
+    _LOGGER.warning("Unknown device type: %s for serial: %s", device_type, serial)
     return None
 

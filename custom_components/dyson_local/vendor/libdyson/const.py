@@ -7,39 +7,37 @@ DEVICE_TYPE_360_VIS_NAV = "277"
 DEVICE_TYPE_PURE_COOL_LINK_DESK = "469"  # DP01? DP02? This one's a bit older, and scraping the Dyson website is unclear
 DEVICE_TYPE_PURE_COOL_DESK = "520"  # AM06? This one's also a bit older, and also hard to scrape off the Dyson website
 DEVICE_TYPE_PURE_COOL_LINK = "475"  # TP02
-DEVICE_TYPE_PURE_COOL = "438"  # TP04
-DEVICE_TYPE_PURIFIER_COOL_K = "438K"  # TP07 AND TP09
-DEVICE_TYPE_PURIFIER_COOL_E = "438E"  # TP07 AND TP09
-DEVICE_TYPE_PURIFIER_COOL_M = "438M"  # TP11
-DEVICE_TYPE_PURE_HUMIDIFY_COOL = "358"  # PH01 probably, but maybe PH02? Not 100% certain
-DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_K = "358K"  # PH03 AND PH04
-DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_E = "358E"  # PH03 AND PH04
+DEVICE_TYPE_PURE_COOL = "438"  # TP04, TP07, TP09, TP11, PC1 - all variants merged, use same DysonPureCool class
+DEVICE_TYPE_PURIFIER_COOL_K = "438K"  # Deprecated: use DEVICE_TYPE_PURE_COOL instead (kept for MQTT topic compatibility)
+DEVICE_TYPE_PURIFIER_COOL_E = "438E"  # Deprecated: use DEVICE_TYPE_PURE_COOL instead (kept for MQTT topic compatibility)
+DEVICE_TYPE_PURIFIER_COOL_M = "438M"  # Deprecated: use DEVICE_TYPE_PURE_COOL instead (kept for MQTT topic compatibility)
+DEVICE_TYPE_PURE_HUMIDIFY_COOL = "358"  # PH01, PH02, PH03, PH04 - all variants merged, use same DysonPurifierHumidifyCool class
+DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_K = "358K"  # Deprecated: use DEVICE_TYPE_PURE_HUMIDIFY_COOL instead (kept for MQTT topic compatibility)
+DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_E = "358E"  # Deprecated: use DEVICE_TYPE_PURE_HUMIDIFY_COOL instead (kept for MQTT topic compatibility)
 DEVICE_TYPE_PURE_HOT_COOL_LINK = "455"  # HP02
-DEVICE_TYPE_PURE_HOT_COOL = "527"  # HP04
-DEVICE_TYPE_PURIFIER_HOT_COOL_E = "527E"  # HP07 AND HP09
-DEVICE_TYPE_PURIFIER_HOT_COOL_K = "527K"  # HP07 AND HP09
-DEVICE_TYPE_PURIFIER_HOT_COOL_M = "527M"  # HP11 AND HP1
+DEVICE_TYPE_PURE_HOT_COOL = "527"  # HP04, HP07, HP09 - all variants merged, use same DysonPureHotCool class
+DEVICE_TYPE_PURIFIER_HOT_COOL_E = "527E"  # Deprecated: use DEVICE_TYPE_PURE_HOT_COOL instead (kept for MQTT topic compatibility)
+DEVICE_TYPE_PURIFIER_HOT_COOL_K = "527K"  # Deprecated: use DEVICE_TYPE_PURE_HOT_COOL instead (kept for MQTT topic compatibility)
 DEVICE_TYPE_PURIFIER_BIG_QUIET = "664"  # BP02, BP03, and BP04
 
 DEVICE_TYPE_NAMES = {
     DEVICE_TYPE_360_EYE: "360 Eye robot vacuum",
     DEVICE_TYPE_360_HEURIST: "360 Heurist robot vacuum",
     DEVICE_TYPE_360_VIS_NAV: "360 Vis Nav robot vacuum",
-    DEVICE_TYPE_PURE_COOL: "Pure Cool",
-    DEVICE_TYPE_PURIFIER_COOL_K: "Purifier Cool K Series (TP07/TP09)",
-    DEVICE_TYPE_PURIFIER_COOL_E: "Purifier Cool E Series (TP07/TP09)",
-    DEVICE_TYPE_PURIFIER_COOL_M: "Purifier Cool M Series (TP11/PC1)",
+    DEVICE_TYPE_PURE_COOL: "Pure Cool Series (TP04/TP07/TP09/TP11/PC1)",
+    DEVICE_TYPE_PURIFIER_COOL_K: "Purifier Cool K Series (Deprecated - use Pure Cool)",
+    DEVICE_TYPE_PURIFIER_COOL_E: "Purifier Cool E Series (Deprecated - use Pure Cool)",
+    DEVICE_TYPE_PURIFIER_COOL_M: "Purifier Cool M Series (Deprecated - use Pure Cool)",
     DEVICE_TYPE_PURE_COOL_DESK: "Pure Cool Link Desk",
     DEVICE_TYPE_PURE_COOL_LINK: "Pure Cool Link",
     DEVICE_TYPE_PURE_COOL_LINK_DESK: "Pure Cool Link Desk",
-    DEVICE_TYPE_PURE_HOT_COOL: "Pure Hot+Cool",
-    DEVICE_TYPE_PURIFIER_HOT_COOL_E: "Pure Hot+Cool (New)",
+    DEVICE_TYPE_PURE_HOT_COOL: "Pure Hot+Cool Series (HP04/HP07/HP09)",
+    DEVICE_TYPE_PURIFIER_HOT_COOL_E: "Pure Hot+Cool E Series (Deprecated - use Pure Hot+Cool)",
     DEVICE_TYPE_PURE_HOT_COOL_LINK: "Pure Hot+Cool Link",
-    DEVICE_TYPE_PURE_HUMIDIFY_COOL: "Pure Humidify+Cool",
-    DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_K: "Purifier Humidify+Cool",
-    DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_E: "Purifier Humidify+Cool",
-    DEVICE_TYPE_PURIFIER_HOT_COOL_K: "Purifier Hot+Cool K Series (HP07/HP09)",
-    DEVICE_TYPE_PURIFIER_HOT_COOL_M: "Purifier Hot+Cool M Series (HP11/HP1)",
+    DEVICE_TYPE_PURE_HUMIDIFY_COOL: "Pure Humidify+Cool Series (PH01/PH02/PH03/PH04)",
+    DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_K: "Purifier Humidify+Cool K Series (Deprecated - use Pure Humidify+Cool)",
+    DEVICE_TYPE_PURIFIER_HUMIDIFY_COOL_E: "Purifier Humidify+Cool E Series (Deprecated - use Pure Humidify+Cool)",
+    DEVICE_TYPE_PURIFIER_HOT_COOL_K: "Purifier Hot+Cool K Series (Deprecated - use Pure Hot+Cool)",
     DEVICE_TYPE_PURIFIER_BIG_QUIET: "Purifier Big+Quiet Series"
 }
 

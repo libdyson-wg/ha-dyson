@@ -24,6 +24,7 @@ from .vendor.libdyson.discovery import DysonDiscovery
 from .vendor.libdyson.dyson_device import DysonDevice
 from .vendor.libdyson.exceptions import (
     DysonException,
+    DysonInvalidAuth,
     DysonNetworkError,
     DysonLoginFailure,
 )
@@ -72,17 +73,30 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_account(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up a MyDyson Account."""
+    _LOGGER.debug("Setting up MyDyson Account for region: %s", entry.data[CONF_REGION])
+    
     if entry.data[CONF_REGION] == "CN":
         account = DysonAccountCN(entry.data[CONF_AUTH])
     else:
         account = DysonAccount(entry.data[CONF_AUTH])
     try:
+        _LOGGER.debug("Calling account.devices() to get device list")
         devices = await hass.async_add_executor_job(account.devices)
+        _LOGGER.debug("Retrieved %d devices from cloud", len(devices))
     except DysonNetworkError:
         _LOGGER.error("Cannot connect to Dyson cloud service.")
         raise ConfigEntryNotReady
+    except DysonInvalidAuth:
+        _LOGGER.error("Invalid authentication credentials for Dyson cloud service.")
+        raise ConfigEntryNotReady
+    except Exception as e:
+        _LOGGER.error("Unexpected error retrieving devices: %s", str(e))
+        raise ConfigEntryNotReady
 
+    _LOGGER.debug("Starting device discovery flows for %d devices", len(devices))
     for device in devices:
+        _LOGGER.debug("Creating discovery flow for device: %s (ProductType: %s)", 
+                     device.name, device.product_type)
         hass.async_create_task(
             hass.config_entries.flow.async_init(
                 DOMAIN,
