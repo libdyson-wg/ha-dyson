@@ -358,6 +358,7 @@ class DysonFanDevice(DysonDevice):
 
     def _set_configuration(self, **kwargs: dict) -> None:
         if not self.is_connected:
+            _LOGGER.debug("Device %s not connected, cannot send configuration", self.serial)
             raise DysonNotConnected
         payload = json.dumps(
             {
@@ -367,7 +368,9 @@ class DysonFanDevice(DysonDevice):
                 "data": kwargs,
             }
         )
+        _LOGGER.debug("Sending configuration to device %s: %s", self.serial, payload)
         self._mqtt_client.publish(self._command_topic, payload, 1)
+        _LOGGER.debug("Configuration sent to topic %s", self._command_topic)
 
     def _request_first_data(self) -> bool:
         """Request and wait for first data."""

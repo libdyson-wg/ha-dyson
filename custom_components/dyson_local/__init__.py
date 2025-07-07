@@ -4,6 +4,7 @@ import asyncio
 from datetime import timedelta
 from functools import partial
 import logging
+import time
 from typing import List, Optional
 
 from .vendor.libdyson import (
@@ -57,6 +58,10 @@ from .cloud.const import (
 _LOGGER = logging.getLogger(__name__)
 
 ENVIRONMENTAL_DATA_UPDATE_INTERVAL = timedelta(seconds=30)
+
+# Global tracking for oscillation updates to prevent infinite loops
+_oscillation_update_locks = {}
+_oscillation_update_timestamps = {}
 
 PLATFORMS = ["camera"]
 
@@ -480,6 +485,9 @@ def _async_get_platforms(device: DysonDevice) -> List[str]:
         platforms.append("humidifier")
     if hasattr(device, "filter_life") or hasattr(device, "carbon_filter_life") or hasattr(device, "hepa_filter_life"):
         platforms.append("button")
+    # Add number platform for devices that support oscillation angle control
+    if hasattr(device, "oscillation_angle_low") and hasattr(device, "oscillation_angle_high") and hasattr(device, "enable_oscillation"):
+        platforms.append("number")
     return platforms
 
 
@@ -492,6 +500,7 @@ class DysonEntity(Entity):
         """Initialize the entity."""
         self._device = device
         self._name = name
+        self._last_oscillation_state = None  # Track the last known oscillation state
 
     async def async_added_to_hass(self) -> None:
         """Call when entity is added to hass."""
@@ -507,6 +516,108 @@ class DysonEntity(Entity):
     def _on_message(self, message_type: MessageType) -> None:
         if self._MESSAGE_TYPE is None or message_type == self._MESSAGE_TYPE:
             self.schedule_update_ha_state()
+
+    def _is_oscillation_entity(self) -> bool:
+        """Check if this is an oscillation-related entity."""
+        # Only consider entities that are specifically oscillation-related
+        # Don't include all entities from devices that support oscillation
+        return (hasattr(self, 'sub_unique_id') and 
+                self.sub_unique_id and
+                ('oscillation' in self.sub_unique_id or 
+                 'angle' in self.sub_unique_id))
+
+    def _schedule_oscillation_entities_update_debounced(self) -> None:
+        """Schedule state updates for oscillation-related entities with debouncing."""
+        device_serial = self._device.serial
+        current_time = time.time()
+        
+        # Check if we've updated recently (within 0.5 seconds) to prevent loops
+        if (device_serial in _oscillation_update_timestamps and 
+            current_time - _oscillation_update_timestamps[device_serial] < 0.5):
+            _LOGGER.debug("Skipping oscillation sync for %s - recent update", device_serial)
+            return
+        
+        # Update timestamp
+        _oscillation_update_timestamps[device_serial] = current_time
+        
+        # Schedule the actual update
+        self._schedule_oscillation_entities_update()
+
+    def _schedule_oscillation_entities_update(self) -> None:
+        """Schedule state updates for oscillation-related entities."""
+        _LOGGER.debug("Scheduling oscillation entities update for device %s", self._device.serial)
+        
+        # This will be called from entity classes when oscillation settings change
+        # The message listener mechanism should handle the updates automatically
+        # Don't force additional status requests as they may interfere with normal data flow
+        
+        # Also trigger direct entity updates
+        self._trigger_oscillation_entities_update()
+        
+        # Schedule a delayed update as well to catch any slow device responses
+        if hasattr(self.hass, 'call_later'):
+            def delayed_update(_):
+                """Delayed update to catch slow device responses."""
+                _LOGGER.debug("Executing delayed oscillation entities update for device %s", self._device.serial)
+                self._trigger_oscillation_entities_update()
+            
+            self.hass.call_later(0.5, delayed_update)
+            
+    def _trigger_oscillation_entities_update(self) -> None:
+        """Trigger updates for all oscillation-related entities."""
+        _LOGGER.debug("Triggering oscillation entities update for device %s", self._device.serial)
+        
+        # Schedule updates for all entities through the device's message system
+        # This ensures that all entities get the latest state from the device
+        if hasattr(self._device, '_callbacks'):
+            updated_count = 0
+            for callback in self._device._callbacks:
+                # Check if the callback is from a DysonEntity (has _is_oscillation_entity method)
+                if hasattr(callback, '__self__') and hasattr(callback.__self__, '_is_oscillation_entity'):
+                    entity = callback.__self__
+                    if entity._is_oscillation_entity():
+                        try:
+                            entity.schedule_update_ha_state(force_refresh=True)
+                            updated_count += 1
+                            _LOGGER.debug("Triggered update for oscillation entity: %s", getattr(entity, 'entity_id', 'unknown'))
+                        except Exception as e:
+                            _LOGGER.debug("Error triggering update for entity: %s", e)
+            
+            _LOGGER.debug("Triggered updates for %d oscillation entities for device %s", updated_count, self._device.serial)
+        else:
+            _LOGGER.debug("Device %s has no _callbacks attribute", self._device.serial)
+
+    def schedule_update_ha_state(self, force_refresh: bool = False) -> None:
+        """Schedule an update for this entity."""
+        # Call the parent method
+        super().schedule_update_ha_state(force_refresh)
+
+    def _check_oscillation_state_change(self) -> None:
+        """Check if oscillation state changed and trigger sync if needed."""
+        try:
+            current_state = self._get_current_oscillation_state()
+            
+            if self._last_oscillation_state is not None and current_state != self._last_oscillation_state:
+                _LOGGER.debug("Oscillation state change detected in %s: %s -> %s", 
+                             self.unique_id, self._last_oscillation_state, current_state)
+                # State changed - trigger sync for all related entities
+                self._schedule_oscillation_entities_update_debounced()
+            
+            self._last_oscillation_state = current_state
+        except Exception as e:
+            _LOGGER.debug("Error checking oscillation state change in %s: %s", self.unique_id, e)
+    
+    def _get_current_oscillation_state(self) -> dict:
+        """Get the current oscillation state for comparison."""
+        # Return relevant oscillation state that should trigger sync when changed
+        if hasattr(self._device, 'oscillation_angle_low'):
+            return {
+                'oscillation': getattr(self._device, 'oscillation', None),
+                'angle_low': getattr(self._device, 'oscillation_angle_low', None),
+                'angle_high': getattr(self._device, 'oscillation_angle_high', None),
+                'center': getattr(self._device, 'oscillation_center', None),
+            }
+        return {}
 
     @property
     def should_poll(self) -> bool:

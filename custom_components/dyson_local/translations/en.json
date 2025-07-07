@@ -71,5 +71,20 @@
     "abort": {
       "already_configured": "Device already configured"
     }
+  },
+  "entity": {
+    "select": {
+      "oscillation_range": {
+        "name": "Oscillation Range",
+        "state": {
+          "off": "Off",
+          "45": "45°",
+          "90": "90°",
+          "180": "180°",
+          "350": "350°",
+          "custom": "Custom"
+        }
+      }
+    }
   }
 }
