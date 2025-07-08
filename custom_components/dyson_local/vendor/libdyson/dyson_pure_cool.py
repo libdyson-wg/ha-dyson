@@ -145,7 +145,7 @@ class DysonPureCool(DysonPureCoolBase):
         angle_high: Optional[int] = None,
     ) -> None:
         """Turn on oscillation."""
-        _LOGGER.info("enable_oscillation() called for device %s with angles %s, %s", self.serial, angle_low, angle_high)
+        _LOGGER.debug("enable_oscillation() called for device %s with angles %s, %s", self.serial, angle_low, angle_high)
         if angle_low is None:
             angle_low = self.oscillation_angle_low
         if angle_high is None:
@@ -165,7 +165,7 @@ class DysonPureCool(DysonPureCoolBase):
             oson = "OION"
         else:
             oson = "ON"
-        _LOGGER.info("Setting oscillation config for device %s: oson=%s, angle_low=%s, angle_high=%s", self.serial, oson, angle_low, angle_high)
+        _LOGGER.debug("Setting oscillation config for device %s: oson=%s, angle_low=%s, angle_high=%s", self.serial, oson, angle_low, angle_high)
         self._set_configuration(
             oson=oson,
             fpwr="ON",
@@ -176,11 +176,11 @@ class DysonPureCool(DysonPureCoolBase):
 
     def disable_oscillation(self) -> None:
         """Turn off oscillation."""
-        _LOGGER.info("disable_oscillation() called for device %s", self.serial)
+        _LOGGER.debug("disable_oscillation() called for device %s", self.serial)
         current_oscillation_raw = self._get_field_value(self._status, "oson")
         if current_oscillation_raw in ["OION", "OIOF"]:
             oson = "OIOF"
         else:
             oson = "OFF"
-        _LOGGER.info("Setting oson=%s for device %s", oson, self.serial)
+        _LOGGER.debug("Setting oson=%s for device %s", oson, self.serial)
         self._set_configuration(oson=oson)

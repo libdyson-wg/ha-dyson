@@ -26,13 +26,13 @@ async def async_setup_entry(
     device = hass.data[DOMAIN][DATA_DEVICES][entry.entry_id]
     name = entry.data[CONF_NAME]
     
-    _LOGGER.info("Setting up number entities for device %s", device.serial)
+    _LOGGER.debug("Setting up number entities for device %s", device.serial)
     
     entities = []
     
     # Only add oscillation angle controls for devices that support oscillation with angle control
     if hasattr(device, 'oscillation_angle_low') and hasattr(device, 'oscillation_angle_high') and hasattr(device, 'enable_oscillation'):
-        _LOGGER.info("Device %s supports oscillation with angle control, adding number entities", device.serial)
+        _LOGGER.debug("Device %s supports oscillation with angle control, adding number entities", device.serial)
         entities.extend([
             DysonOscillationLowAngleNumber(device, name),
             DysonOscillationHighAngleNumber(device, name),
@@ -40,13 +40,13 @@ async def async_setup_entry(
         ])
     else:
         _LOGGER.warning("Device %s does not support oscillation with angle control, skipping number entities", device.serial)
-        _LOGGER.info("Device attributes: oscillation_angle_low=%s, oscillation_angle_high=%s, enable_oscillation=%s", 
+        _LOGGER.debug("Device attributes: oscillation_angle_low=%s, oscillation_angle_high=%s, enable_oscillation=%s", 
                     hasattr(device, 'oscillation_angle_low'), 
                     hasattr(device, 'oscillation_angle_high'), 
                     hasattr(device, 'enable_oscillation'))
     
     if entities:
-        _LOGGER.info("Adding %d number entities for device %s", len(entities), device.serial)
+        _LOGGER.debug("Adding %d number entities for device %s", len(entities), device.serial)
         async_add_entities(entities)
     else:
         _LOGGER.warning("No number entities to add for device %s", device.serial)
@@ -234,7 +234,7 @@ class DysonOscillationCenterAngleNumber(DysonEntity, NumberEntity):
     def __init__(self, device, name: str):
         """Initialize the number entity."""
         super().__init__(device, name)
-        _LOGGER.info("DysonOscillationCenterAngleNumber entity created for device %s", device.serial)
+        _LOGGER.debug("DysonOscillationCenterAngleNumber entity created for device %s", device.serial)
 
     async def async_added_to_hass(self) -> None:
         """Call when entity is added to hass."""
@@ -281,7 +281,7 @@ class DysonOscillationCenterAngleNumber(DysonEntity, NumberEntity):
     def name(self) -> str:
         """Return the name of the entity."""
         entity_name = super().name
-        _LOGGER.error("CENTER ANGLE ENTITY NAME ACCESSED: %s", entity_name)
+        _LOGGER.debug("CENTER ANGLE ENTITY NAME ACCESSED: %s", entity_name)
         return entity_name
 
     @property
@@ -294,16 +294,14 @@ class DysonOscillationCenterAngleNumber(DysonEntity, NumberEntity):
             # Calculate center point - Dyson hardware only supports high > low (no wrap-around)
             center = (low_angle + high_angle) / 2
             
-            _LOGGER.critical("CRITICAL: native_value accessed for center angle: low=%s, high=%s, center=%s", low_angle, high_angle, center)
-            print(f"PYTHON PRINT: native_value - low={low_angle}, high={high_angle}, center={center}")
+            _LOGGER.debug("native_value accessed for center angle: low=%s, high=%s, center=%s", low_angle, high_angle, center)
             return float(center)
-        _LOGGER.critical("CRITICAL: native_value accessed but device lacks oscillation angle attributes")
+        _LOGGER.debug("native_value accessed but device lacks oscillation angle attributes")
         return None
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the oscillation center angle."""
-        _LOGGER.critical("CRITICAL: async_set_native_value ENTRY: Setting oscillation center angle to %f for device %s", value, self._device.serial)
-        print(f"PYTHON PRINT: async_set_native_value called with value {value}")
+        _LOGGER.debug("async_set_native_value ENTRY: Setting oscillation center angle to %f for device %s", value, self._device.serial)
         try:
             new_center = int(value)
             
@@ -359,7 +357,7 @@ class DysonOscillationCenterAngleNumber(DysonEntity, NumberEntity):
             await self.hass.async_add_executor_job(
                 self._device.enable_oscillation, new_low, new_high
             )
-            _LOGGER.info("Set oscillation center to %d° (range: %d° to %d°)", new_center, new_low, new_high)
+            _LOGGER.debug("Set oscillation center to %d° (range: %d° to %d°)", new_center, new_low, new_high)
         except Exception as e:
             _LOGGER.error("Failed to set oscillation center angle: %s", e)
 
@@ -367,6 +365,6 @@ class DysonOscillationCenterAngleNumber(DysonEntity, NumberEntity):
     def available(self) -> bool:
         """Return True if entity is available."""
         is_available = super().available and hasattr(self._device, 'oscillation_angle_low')
-        _LOGGER.info("available property for center angle entity: %s (super().available=%s, has_attr=%s)", 
+        _LOGGER.debug("available property for center angle entity: %s (super().available=%s, has_attr=%s)", 
                     is_available, super().available, hasattr(self._device, 'oscillation_angle_low'))
         return is_available
