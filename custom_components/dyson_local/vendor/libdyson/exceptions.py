@@ -30,7 +30,7 @@ class DysonOTPTooFrequently(DysonException):
 
 
 class DysonAuthRequired(DysonException):
-    """Represents not logged into could."""
+    """Represents not logged into cloud."""
 
 
 class DysonInvalidAuth(DysonException):

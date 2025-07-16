@@ -37,7 +37,7 @@ FILE_PATH = pathlib.Path(__file__).parent.absolute()
 
 
 class HTTPBearerAuth(AuthBase):
-    """Attaches HTTP Bearder Authentication to the given Request object."""
+    """Attaches HTTP Bearer Authentication to the given Request object."""
 
     def __init__(self, token):
         """Initialize the auth."""
@@ -119,6 +119,38 @@ class DysonAccount:
             raise DysonServerError
         return response
 
+    def _retry_request(
+        self,
+        method: str,
+        path: str,
+        params: Optional[dict] = None,
+        data: Optional[dict] = None,
+        auth: bool = True,
+        max_retries: int = 3,
+        retry_delay: float = 1.0,
+        backoff_factor: float = 2.0,
+    ) -> requests.Response:
+        """Make API request with retry logic."""
+        import time
+        
+        last_exception = None
+        for attempt in range(max_retries):
+            try:
+                return self.request(method, path, params, data, auth)
+            except (DysonNetworkError, DysonServerError) as e:
+                last_exception = e
+                if attempt == max_retries - 1:  # Last attempt
+                    raise e
+                sleep_time = retry_delay * (backoff_factor ** attempt)
+                time.sleep(sleep_time)
+            except (DysonInvalidAuth, DysonLoginFailure, DysonOTPTooFrequently):
+                # Don't retry these - they're likely permanent or rate-limited
+                raise
+        
+        # This shouldn't be reached, but just in case
+        if last_exception:
+            raise last_exception
+
     def provision_api(self) -> None:
         """Provision the client connection to the API
 
@@ -178,37 +210,107 @@ class DysonAccount:
         challenge_id = response.json()["challengeId"]
 
         def _verify(otp_code: str, password: str):
-            response = self.request(
-                "POST",
-                API_PATH_EMAIL_VERIFY,
-                data={
-                    "email": email,
-                    "password": password,
-                    "challengeId": challenge_id,
-                    "otpCode": otp_code,
-                },
-                auth=False,
-            )
-            if response.status_code == 400:
-                raise DysonLoginFailure
-            body = response.json()
-            self._auth_info = body
-            return self._auth_info
+            import time
+            max_retries = 3
+            retry_delay = 1  # seconds
+            
+            for attempt in range(max_retries):
+                try:
+                    response = self.request(
+                        "POST",
+                        API_PATH_EMAIL_VERIFY,
+                        data={
+                            "email": email,
+                            "password": password,
+                            "challengeId": challenge_id,
+                            "otpCode": otp_code,
+                        },
+                        auth=False,
+                    )
+                    if response.status_code == 400:
+                        raise DysonLoginFailure
+                    body = response.json()
+                    self._auth_info = body
+                    return self._auth_info
+                except (DysonNetworkError, DysonServerError) as e:
+                    if attempt == max_retries - 1:  # Last attempt
+                        raise e
+                    time.sleep(retry_delay * (2 ** attempt))  # Exponential backoff
+                except DysonInvalidAuth:
+                    # Don't retry auth failures - they're likely permanent
+                    raise
 
         return _verify
 
     def devices(self) -> List[DysonDeviceInfo]:
-        self.provision_api()
         """Get device info from cloud account."""
+        import logging
+        import json
+        _LOGGER = logging.getLogger(__name__)
+        
+        self.provision_api()
         devices = []
-        response = self.request("GET", API_PATH_DEVICES)
-        for raw in response.json():
+        response = self._retry_request("GET", API_PATH_DEVICES)
+        response_data = response.json()
+        
+        _LOGGER.debug("Cloud API returned %d devices", len(response_data))
+        
+        for raw in response_data:
+            _LOGGER.debug("Processing device: %s", raw.get("Name", "Unknown"))
+            _LOGGER.debug("Device ProductType: %s", raw.get("ProductType", "Unknown"))
+            
+            # Check for variant field using lowercase "variant" (OpenAPI spec)
+            variant_value = raw.get("variant")
+            _LOGGER.debug("Device variant: %s", variant_value)
+            
+            _LOGGER.debug("Device Serial: %s", raw.get("Serial", "Unknown"))
+            _LOGGER.debug("Device has LocalCredentials: %s", raw.get("LocalCredentials") is not None)
+            
+            # Check for alternative field names that might contain variant info
+            possible_variant_fields = [
+                "variant", "ProductVariant", "productVariant", "ModelVariant", "modelVariant", 
+                "DeviceVariant", "deviceVariant", "Type", "type", "Model", "model", "SubType", "subType", 
+                "Category", "category", "Region", "region", "Version", "version",
+                "ProductCategory", "productCategory", "ProductModel", "productModel", 
+                "ProductSubType", "productSubType", "serialNumber", "connectionCategory"
+            ]
+            
+            _LOGGER.debug("Checking for variant information in all possible fields:")
+            for field in possible_variant_fields:
+                if field in raw:
+                    _LOGGER.debug("  %s: %s", field, raw[field])
+            
+            # Log the complete raw response for this device (truncated for sensitive data)
+            raw_copy = raw.copy()
+            if "LocalCredentials" in raw_copy:
+                raw_copy["LocalCredentials"] = "[REDACTED]"
+            _LOGGER.debug("Complete raw device data: %s", json.dumps(raw_copy, indent=2))
+            
             if raw.get("LocalCredentials") is None:
                 # Lightcycle lights don't have LocalCredentials.
                 # They're not supported so just skip.
                 # See https://github.com/shenxn/libdyson/issues/2 for more info
+                _LOGGER.debug("Skipping device %s - no LocalCredentials", raw.get("Name", "Unknown"))
                 continue
-            devices.append(DysonDeviceInfo.from_raw(raw))
+            
+            try:
+                device_info = DysonDeviceInfo.from_raw(raw)
+                _LOGGER.debug("Created DysonDeviceInfo - Name: %s, ProductType: %s, Variant: %s, Serial: %s", 
+                             device_info.name, device_info.product_type, device_info.variant, device_info.serial)
+                
+                # Test the device type mapping
+                device_type = device_info.get_device_type()
+                _LOGGER.debug("Device type mapping: ProductType=%s, Variant=%s -> %s", 
+                             device_info.product_type, device_info.variant, device_type)
+                
+                devices.append(device_info)
+                _LOGGER.debug("Successfully added device: %s", device_info.name)
+            except Exception as e:
+                _LOGGER.error("Error creating device info for %s: %s", raw.get("Name", "Unknown"), str(e))
+                import traceback
+                _LOGGER.error("Traceback: %s", traceback.format_exc())
+        
+        _LOGGER.debug("Total devices returned: %d", len(devices))
         return devices
 
 

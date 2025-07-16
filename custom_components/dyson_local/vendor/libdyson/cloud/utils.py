@@ -16,6 +16,8 @@ DYSON_ENCRYPTION_INIT_VECTOR = (
 
 def _unpad(string: str) -> str:
     """Un-pad string."""
+    if not string:
+        return string
     return string[: -ord(string[len(string) - 1 :])]
 
 
