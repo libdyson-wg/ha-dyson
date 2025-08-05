@@ -7,6 +7,24 @@ import logging
 import time
 from typing import List, Optional
 
+from homeassistant.components.zeroconf import async_get_instance
+from homeassistant.config_entries import SOURCE_DISCOVERY, ConfigEntry
+from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from .cloud.const import CONF_AUTH, CONF_REGION, DATA_ACCOUNT, DATA_DEVICES
+from .const import (
+    CONF_CREDENTIAL,
+    CONF_DEVICE_TYPE,
+    CONF_SERIAL,
+    DATA_COORDINATORS,
+    DATA_DEVICES,
+    DATA_DISCOVERY,
+    DOMAIN,
+)
 from .vendor.libdyson import (
     Dyson360Eye,
     Dyson360Heurist,
@@ -17,42 +35,14 @@ from .vendor.libdyson import (
     MessageType,
     get_device,
 )
-from .vendor.libdyson.cloud import (
-    DysonAccountCN,
-    DysonAccount,
-)
+from .vendor.libdyson.cloud import DysonAccount, DysonAccountCN
 from .vendor.libdyson.discovery import DysonDiscovery
 from .vendor.libdyson.dyson_device import DysonDevice
 from .vendor.libdyson.exceptions import (
     DysonException,
     DysonInvalidAuth,
-    DysonNetworkError,
     DysonLoginFailure,
-)
-
-from homeassistant.components.zeroconf import async_get_instance
-from homeassistant.config_entries import ConfigEntry, SOURCE_DISCOVERY
-from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-
-from .const import (
-    CONF_CREDENTIAL,
-    CONF_DEVICE_TYPE,
-    CONF_SERIAL,
-    DATA_COORDINATORS,
-    DATA_DEVICES,
-    DATA_DISCOVERY,
-    DOMAIN,
-)
-
-from .cloud.const import (
-    CONF_REGION,
-    CONF_AUTH,
-    DATA_ACCOUNT,
-    DATA_DEVICES,
+    DysonNetworkError,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -81,7 +71,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def async_setup_account(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up a MyDyson Account."""
     _LOGGER.debug("Setting up MyDyson Account for region: %s", entry.data[CONF_REGION])
-    
+
     if entry.data[CONF_REGION] == "CN":
         account = DysonAccountCN(entry.data[CONF_AUTH])
     else:
@@ -102,8 +92,8 @@ async def async_setup_account(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _LOGGER.debug("Starting device discovery flows for %d devices", len(devices))
     for device in devices:
-        _LOGGER.debug("Creating discovery flow for device: %s (ProductType: %s)", 
-                     device.name, device.product_type)
+        _LOGGER.debug("Creating discovery flow for device: %s (ProductType: %s)",
+                      device.name, device.product_type)
         hass.async_create_task(
             hass.config_entries.flow.async_init(
                 DOMAIN,
@@ -162,6 +152,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             name=f"environmental_{device.serial}",
             update_method=async_update_data,
             update_interval=ENVIRONMENTAL_DATA_UPDATE_INTERVAL,
+            config_entry=entry,
         )
         _LOGGER.debug("Created coordinator for device %s", device.serial)
     else:
