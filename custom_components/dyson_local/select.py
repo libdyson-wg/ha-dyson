@@ -3,17 +3,16 @@
 import logging
 from typing import Callable
 
-from .vendor.libdyson import (
-    DysonPureCool,
+from libdyson import (
+    DysonBigQuiet,
     DysonPureCoolLink,
     DysonPureHotCoolLink,
     DysonPurifierHumidifyCool,
     HumidifyOscillationMode,
     Tilt,
     WaterHardness,
-    DysonBigQuiet,
 )
-from .vendor.libdyson.const import AirQualityTarget
+from libdyson.const import AirQualityTarget
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -45,10 +44,10 @@ OSCILLATION_RANGE_OPTIONS = ["off", "45", "90", "180", "350", "custom"]
 OSCILLATION_RANGE_DISPLAY_NAMES = {
     "off": "Off",
     "45°": "45°",
-    "90°": "90°", 
+    "90°": "90°",
     "180°": "180°",
     "350°": "350°",
-    "custom": "Custom"
+    "custom": "Custom",
 }
 
 OSCILLATION_MODE_ENUM_TO_STR = {
@@ -69,9 +68,7 @@ TILT_ENUM_TO_STR = {
     359: "Breeze",
 }
 
-TILT_STR_TO_ENUM = {
-    value: key for key, value in TILT_ENUM_TO_STR.items()
-}
+TILT_STR_TO_ENUM = {value: key for key, value in TILT_ENUM_TO_STR.items()}
 
 
 WATER_HARDNESS_STR_TO_ENUM = {
@@ -225,7 +222,7 @@ class DysonOscillationRangeSelect(DysonEntity, SelectEntity):
     """Oscillation range select for supported models."""
 
     _attr_options = OSCILLATION_RANGE_OPTIONS
-    
+
     def __init__(self, device, name: str):
         """Initialize the select entity."""
         super().__init__(device, name)
@@ -249,9 +246,13 @@ class DysonOscillationRangeSelect(DysonEntity, SelectEntity):
 
         # Dyson hardware only supports high >= low (no wrap-around)
         if high_angle < low_angle:
-            _LOGGER.warning("Invalid oscillation state: high angle (%d) < low angle (%d)", high_angle, low_angle)
+            _LOGGER.warning(
+                "Invalid oscillation state: high angle (%d) < low angle (%d)",
+                high_angle,
+                low_angle,
+            )
             return "custom"  # Return custom for invalid states
-        
+
         angle_diff = high_angle - low_angle
         current_center = (low_angle + high_angle) / 2
 
@@ -286,16 +287,24 @@ class DysonOscillationRangeSelect(DysonEntity, SelectEntity):
                 await self.hass.async_add_executor_job(
                     self._device.enable_oscillation, new_low, new_high
                 )
-                _LOGGER.debug("Set oscillation to maximum range: %d° to %d° (350° range)", new_low, new_high)
-                
+                _LOGGER.debug(
+                    "Set oscillation to maximum range: %d° to %d° (350° range)",
+                    new_low,
+                    new_high,
+                )
+
                 return
-            
+
             # For non-350° ranges, use preferred center or current center
             if self._user_preferred_center is not None:
                 # Use the user's preferred center from previous non-350° selections
                 target_center = self._user_preferred_center
                 _LOGGER.debug("Using stored preferred center: %.1f°", target_center)
-            elif self._device.oscillation and hasattr(self._device, 'oscillation_angle_low') and hasattr(self._device, 'oscillation_angle_high'):
+            elif (
+                self._device.oscillation
+                and hasattr(self._device, "oscillation_angle_low")
+                and hasattr(self._device, "oscillation_angle_high")
+            ):
                 # Calculate current center point
                 current_low = self._device.oscillation_angle_low
                 current_high = self._device.oscillation_angle_high
@@ -312,7 +321,7 @@ class DysonOscillationRangeSelect(DysonEntity, SelectEntity):
                 # No current oscillation, use default center (front)
                 target_center = 180
                 self._user_preferred_center = target_center
-            
+
             # Calculate new low and high angles based on desired range and current center
             if option == "45":
                 range_degrees = 45
@@ -328,8 +337,12 @@ class DysonOscillationRangeSelect(DysonEntity, SelectEntity):
                 await self.hass.async_add_executor_job(
                     self._device.enable_oscillation, new_low, new_high
                 )
-                _LOGGER.debug("Set oscillation to maximum range: %d° to %d° (350° range)", new_low, new_high)
-                
+                _LOGGER.debug(
+                    "Set oscillation to maximum range: %d° to %d° (350° range)",
+                    new_low,
+                    new_high,
+                )
+
                 return
             elif option == "custom":
                 # Don't change angles for custom - user should use number entities
@@ -341,41 +354,51 @@ class DysonOscillationRangeSelect(DysonEntity, SelectEntity):
             half_range = range_degrees / 2
             new_low_raw = target_center - half_range
             new_high_raw = target_center + half_range
-            
+
             # Apply constraints to keep angles within 5-355 degrees
             new_low = max(5, min(355, int(new_low_raw)))
             new_high = max(5, min(355, int(new_high_raw)))
-            
+
             # Ensure high >= low (no wrap-around allowed)
             if new_high < new_low:
-                _LOGGER.warning("Cannot set range - would result in invalid oscillation range (high < low)")
+                _LOGGER.warning(
+                    "Cannot set range - would result in invalid oscillation range (high < low)"
+                )
                 # Fall back to default center if target center causes issues
                 fallback_center = 180
                 new_low_raw = fallback_center - half_range
                 new_high_raw = fallback_center + half_range
                 new_low = max(5, min(355, int(new_low_raw)))
                 new_high = max(5, min(355, int(new_high_raw)))
-                
+
                 if new_high < new_low:
                     _LOGGER.error("Cannot set range - even with fallback center")
                     return
                 else:
                     # Update preferred center to the fallback that worked
                     self._user_preferred_center = fallback_center
-            
+
             # Validate that the resulting range is acceptable
             calculated_range = new_high - new_low
-            if calculated_range < range_degrees - 10:  # Allow some tolerance for constraints
+            if (
+                calculated_range < range_degrees - 10
+            ):  # Allow some tolerance for constraints
                 _LOGGER.warning(
                     "Range adjustment limited by angle constraints (requested %d°, got %d°)",
-                    range_degrees, calculated_range
+                    range_degrees,
+                    calculated_range,
                 )
-            
+
             await self.hass.async_add_executor_job(
                 self._device.enable_oscillation, new_low, new_high
             )
-            _LOGGER.debug("Set oscillation range to %d° centered at %.1f° (range: %d° to %d°)", 
-                         range_degrees, target_center, new_low, new_high)
+            _LOGGER.debug(
+                "Set oscillation range to %d° centered at %.1f° (range: %d° to %d°)",
+                range_degrees,
+                target_center,
+                new_low,
+                new_high,
+            )
 
     @property
     def sub_name(self) -> str:
@@ -395,7 +418,7 @@ class DysonOscillationRangeSelect(DysonEntity, SelectEntity):
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
-        return super().available and hasattr(self._device, 'oscillation_angle_low')
+        return super().available and hasattr(self._device, "oscillation_angle_low")
 
     @property
     def icon(self) -> str:

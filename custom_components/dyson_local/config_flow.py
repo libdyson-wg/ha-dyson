@@ -4,10 +4,10 @@ import logging
 import threading
 from typing import Optional
 
-from .vendor.libdyson import DEVICE_TYPE_NAMES, get_device, get_mqtt_info_from_wifi_info
-from .vendor.libdyson.cloud import DysonDeviceInfo
-from .vendor.libdyson.discovery import DysonDiscovery
-from .vendor.libdyson.exceptions import (
+from libdyson import DEVICE_TYPE_NAMES, get_device, get_mqtt_info_from_wifi_info
+from libdyson.cloud import DysonDeviceInfo
+from libdyson.discovery import DysonDiscovery
+from libdyson.exceptions import (
     DysonException,
     DysonFailedToParseWifiInfo,
     DysonInvalidCredential,
@@ -17,10 +17,10 @@ from .vendor.libdyson.exceptions import (
     DysonInvalidAccountStatus,
     DysonLoginFailure,
 )
-from .vendor.libdyson.cloud import DysonAccount, DysonAccountCN, REGIONS
+from libdyson.cloud import DysonAccount, DysonAccountCN, REGIONS
 
 # Import device type constants for mapping
-from .vendor.libdyson.const import (
+from libdyson.const import (
     DEVICE_TYPE_360_EYE,
     DEVICE_TYPE_360_HEURIST,
     DEVICE_TYPE_360_VIS_NAV,

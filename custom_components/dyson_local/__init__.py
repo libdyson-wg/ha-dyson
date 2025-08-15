@@ -7,6 +7,26 @@ import logging
 import time
 from typing import List, Optional
 
+from libdyson import (
+    Dyson360Eye,
+    Dyson360Heurist,
+    Dyson360VisNav,
+    DysonPureHotCool,
+    DysonPureHotCoolLink,
+    DysonPurifierHumidifyCool,
+    MessageType,
+    get_device,
+)
+from libdyson.cloud import DysonAccount, DysonAccountCN
+from libdyson.discovery import DysonDiscovery
+from libdyson.dyson_device import DysonDevice
+from libdyson.exceptions import (
+    DysonException,
+    DysonInvalidAuth,
+    DysonLoginFailure,
+    DysonNetworkError,
+)
+
 from homeassistant.components.zeroconf import async_get_instance
 from homeassistant.config_entries import SOURCE_DISCOVERY, ConfigEntry
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
@@ -24,25 +44,6 @@ from .const import (
     DATA_DEVICES,
     DATA_DISCOVERY,
     DOMAIN,
-)
-from .vendor.libdyson import (
-    Dyson360Eye,
-    Dyson360Heurist,
-    Dyson360VisNav,
-    DysonPureHotCool,
-    DysonPureHotCoolLink,
-    DysonPurifierHumidifyCool,
-    MessageType,
-    get_device,
-)
-from .vendor.libdyson.cloud import DysonAccount, DysonAccountCN
-from .vendor.libdyson.discovery import DysonDiscovery
-from .vendor.libdyson.dyson_device import DysonDevice
-from .vendor.libdyson.exceptions import (
-    DysonException,
-    DysonInvalidAuth,
-    DysonLoginFailure,
-    DysonNetworkError,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -92,8 +93,11 @@ async def async_setup_account(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _LOGGER.debug("Starting device discovery flows for %d devices", len(devices))
     for device in devices:
-        _LOGGER.debug("Creating discovery flow for device: %s (ProductType: %s)",
-                      device.name, device.product_type)
+        _LOGGER.debug(
+            "Creating discovery flow for device: %s (ProductType: %s)",
+            device.name,
+            device.product_type,
+        )
         hass.async_create_task(
             hass.config_entries.flow.async_init(
                 DOMAIN,
@@ -114,7 +118,7 @@ async def async_setup_account(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Dyson from a config entry."""
     _LOGGER.debug("Setting up entry: %s", entry.entry_id)
-    
+
     if CONF_REGION in entry.data:
         return await async_setup_account(hass, entry)
 
@@ -123,7 +127,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_CREDENTIAL],
         entry.data[CONF_DEVICE_TYPE],
     )
-    
+
     # Ensure device is disconnected before attempting to connect
     # This is important for reload scenarios
     try:
@@ -133,11 +137,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await asyncio.sleep(0.2)
     except Exception as e:
         # Device might not have been connected, which is fine
-        _LOGGER.debug("Device %s was not connected during setup (expected): %s", device.serial, e)
+        _LOGGER.debug(
+            "Device %s was not connected during setup (expected): %s", device.serial, e
+        )
 
-    if (not isinstance(device, Dyson360Eye)
-            and not isinstance(device, Dyson360Heurist)
-            and not isinstance(device, Dyson360VisNav)):
+    if (
+        not isinstance(device, Dyson360Eye)
+        and not isinstance(device, Dyson360Heurist)
+        and not isinstance(device, Dyson360VisNav)
+    ):
         # Set up coordinator
         async def async_update_data():
             """Poll environmental data from the device."""
@@ -160,27 +168,38 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.debug("No coordinator needed for vacuum device %s", device.serial)
 
     def setup_entry(host: str, is_discovery: bool = True) -> bool:
-        _LOGGER.debug("setup_entry called for device %s at %s (discovery: %s)", device.serial, host, is_discovery)
-        
+        _LOGGER.debug(
+            "setup_entry called for device %s at %s (discovery: %s)",
+            device.serial,
+            host,
+            is_discovery,
+        )
+
         # Check if device is already connected and disconnect if necessary
         try:
-            if hasattr(device, 'is_connected') and device.is_connected:
-                _LOGGER.debug("Device %s already connected, disconnecting first", device.serial)
+            if hasattr(device, "is_connected") and device.is_connected:
+                _LOGGER.debug(
+                    "Device %s already connected, disconnecting first", device.serial
+                )
                 device.disconnect()
         except Exception as e:
-            _LOGGER.debug("Error checking/disconnecting device %s: %s", device.serial, e)
-        
+            _LOGGER.debug(
+                "Error checking/disconnecting device %s: %s", device.serial, e
+            )
+
         try:
             device.connect(host)
-            _LOGGER.debug("Successfully connected to device %s at %s", device.serial, host)
-            
+            _LOGGER.debug(
+                "Successfully connected to device %s at %s", device.serial, host
+            )
+
             # Cache the IP address for this device for future use
             if is_discovery and host:
                 if "device_ips" not in hass.data[DOMAIN]:
                     hass.data[DOMAIN]["device_ips"] = {}
                 hass.data[DOMAIN]["device_ips"][device.serial] = host
                 _LOGGER.debug("Cached IP %s for device %s", host, device.serial)
-            
+
         except DysonException as e:
             if is_discovery:
                 _LOGGER.error(
@@ -190,24 +209,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     str(e),
                 )
                 return False
-            _LOGGER.error("Failed to connect to device %s at %s during setup: %s", device.serial, host, str(e))
+            _LOGGER.error(
+                "Failed to connect to device %s at %s during setup: %s",
+                device.serial,
+                host,
+                str(e),
+            )
             raise ConfigEntryNotReady from e
-        
+
         # Store device and coordinator data
         hass.data[DOMAIN][DATA_DEVICES][entry.entry_id] = device
         hass.data[DOMAIN][DATA_COORDINATORS][entry.entry_id] = coordinator
         _LOGGER.debug("Stored device %s and coordinator in hass.data", device.serial)
-        
+
         # Set up platforms
         try:
             platforms = _async_get_platforms(device)
             _LOGGER.debug("Setting up platforms for %s: %s", device.serial, platforms)
             asyncio.run_coroutine_threadsafe(
-                hass.config_entries.async_forward_entry_setups(entry, platforms), hass.loop
+                hass.config_entries.async_forward_entry_setups(entry, platforms),
+                hass.loop,
             ).result()
             _LOGGER.debug("Successfully set up platforms for %s", device.serial)
         except Exception as e:
-            _LOGGER.error("Failed to set up platforms for %s: %s", device.serial, str(e))
+            _LOGGER.error(
+                "Failed to set up platforms for %s: %s", device.serial, str(e)
+            )
             # Clean up on platform setup failure
             hass.data[DOMAIN][DATA_DEVICES].pop(entry.entry_id, None)
             hass.data[DOMAIN][DATA_COORDINATORS].pop(entry.entry_id, None)
@@ -218,7 +245,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             if not is_discovery:
                 raise ConfigEntryNotReady from e
             return False
-        
+
         _LOGGER.debug("setup_entry completed successfully for device %s", device.serial)
         return True
 
@@ -245,49 +272,64 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 discovery.stop_discovery()
 
             hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, stop_discovery)
-        
+
         # Always check for and restore preserved discovered devices (for reload scenarios)
         # This should happen whether discovery is new or existing
         preserved_discovered = hass.data[DOMAIN].pop("preserved_discovered", {})
         if preserved_discovered:
-            _LOGGER.debug("Restoring preserved discovered devices: %s", list(preserved_discovered.keys()))
+            _LOGGER.debug(
+                "Restoring preserved discovered devices: %s",
+                list(preserved_discovered.keys()),
+            )
             with discovery._lock:
                 # Merge preserved devices with any currently discovered devices
                 discovery._discovered.update(preserved_discovered)
         else:
             _LOGGER.debug("No preserved discovered devices found to restore")
-        
+
         # Increment discovery usage count
         if "discovery_count" not in hass.data[DOMAIN]:
             hass.data[DOMAIN]["discovery_count"] = 0
         hass.data[DOMAIN]["discovery_count"] += 1
-        _LOGGER.debug("Discovery count is now: %d", hass.data[DOMAIN]["discovery_count"])
+        _LOGGER.debug(
+            "Discovery count is now: %d", hass.data[DOMAIN]["discovery_count"]
+        )
 
         # Register device with discovery service with enhanced handling
-        await _async_register_device_with_discovery(hass, discovery, device, setup_entry, entry)
+        await _async_register_device_with_discovery(
+            hass, discovery, device, setup_entry, entry
+        )
         _LOGGER.debug("Device %s registration with discovery completed", device.serial)
 
     _LOGGER.debug("Successfully completed setup for entry: %s", entry.entry_id)
-    
+
     # For discovery-based devices, we might not have immediate connection
     # The device will connect when discovered, so don't fail here
-    if entry.data.get(CONF_HOST) and entry.entry_id not in hass.data[DOMAIN][DATA_DEVICES]:
+    if (
+        entry.data.get(CONF_HOST)
+        and entry.entry_id not in hass.data[DOMAIN][DATA_DEVICES]
+    ):
         # Only fail for static host devices that should have connected immediately
-        _LOGGER.error("Device setup verification failed - device %s not found in data after setup", device.serial)
+        _LOGGER.error(
+            "Device setup verification failed - device %s not found in data after setup",
+            device.serial,
+        )
         raise ConfigEntryNotReady
-    
+
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload Dyson local."""
     _LOGGER.debug("Unloading entry: %s", entry.entry_id)
-    
+
     # Ensure domain data exists
     if DOMAIN not in hass.data:
-        _LOGGER.warning("Domain data not found during unload - integration may have already been removed")
+        _LOGGER.warning(
+            "Domain data not found during unload - integration may have already been removed"
+        )
         return True
-    
+
     # Handle cloud account entries (MyDyson accounts)
     if CONF_REGION in entry.data:
         _LOGGER.debug("Unloading cloud account entry: %s", entry.entry_id)
@@ -296,7 +338,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if unload_ok and entry.entry_id in hass.data[DOMAIN]:
             hass.data[DOMAIN].pop(entry.entry_id)
         return unload_ok
-    
+
     # Ensure sub-dictionaries exist for device entries
     if DATA_DEVICES not in hass.data[DOMAIN]:
         hass.data[DOMAIN][DATA_DEVICES] = {}
@@ -304,59 +346,83 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN][DATA_COORDINATORS] = {}
     if "discovery_count" not in hass.data[DOMAIN]:
         hass.data[DOMAIN]["discovery_count"] = 0
-    
+
     # Check if the entry exists in our data
     if entry.entry_id not in hass.data[DOMAIN][DATA_DEVICES]:
-        _LOGGER.debug("Entry %s not found in devices data during unload - this is normal during reload operations", entry.entry_id)
+        _LOGGER.debug(
+            "Entry %s not found in devices data during unload - this is normal during reload operations",
+            entry.entry_id,
+        )
         # For missing entries, just return True since there's nothing to unload
         # Don't try to unload platforms as they may not have been properly loaded
         return True
-    
+
     device: DysonDevice = hass.data[DOMAIN][DATA_DEVICES][entry.entry_id]
-    
+
     # Get the platforms that should be unloaded based on device type
     expected_platforms = _async_get_platforms(device)
     _LOGGER.debug("Expected platforms for %s: %s", entry.entry_id, expected_platforms)
-    
+
     # Instead of trying to unload platforms that may not have been loaded,
     # let's be more conservative and only unload if we're confident they exist
     unload_ok = True
-    
+
     try:
         # Try to unload all expected platforms at once
-        platforms_unload_result = await hass.config_entries.async_unload_platforms(entry, expected_platforms)
-        _LOGGER.debug("Platforms unload result for %s: %s", entry.entry_id, platforms_unload_result)
+        platforms_unload_result = await hass.config_entries.async_unload_platforms(
+            entry, expected_platforms
+        )
+        _LOGGER.debug(
+            "Platforms unload result for %s: %s",
+            entry.entry_id,
+            platforms_unload_result,
+        )
         unload_ok = platforms_unload_result
-        
+
         # If platforms were successfully unloaded, give extra time for entity cleanup
         if platforms_unload_result:
             _LOGGER.debug("Allowing time for entity cleanup after platform unload")
             await asyncio.sleep(0.5)
-        
+
     except ValueError as e:
         if "never loaded" in str(e).lower():
-            _LOGGER.debug("Platforms were never loaded for entry %s - considering unload successful", entry.entry_id)
+            _LOGGER.debug(
+                "Platforms were never loaded for entry %s - considering unload successful",
+                entry.entry_id,
+            )
             # This is actually a successful scenario during reload - the platforms weren't loaded
             unload_ok = True
         else:
-            _LOGGER.warning("ValueError during platform unload for entry %s: %s", entry.entry_id, e)
+            _LOGGER.warning(
+                "ValueError during platform unload for entry %s: %s", entry.entry_id, e
+            )
             # For other ValueErrors, we'll still consider it successful to avoid blocking the unload
             unload_ok = True
     except Exception as e:
-        _LOGGER.warning("Error unloading platforms for entry %s (continuing with cleanup): %s", entry.entry_id, e)
+        _LOGGER.warning(
+            "Error unloading platforms for entry %s (continuing with cleanup): %s",
+            entry.entry_id,
+            e,
+        )
         # Even if platform unload fails, continue with the rest of the cleanup
         unload_ok = True
 
     # Always proceed with cleanup, even if platform unload had issues
-    
+
     # Handle discovery cleanup BEFORE removing device from DATA_DEVICES
     # This ensures the preservation logic can properly check for other devices
-    _LOGGER.debug("Checking if entry uses discovery - CONF_HOST: %s", entry.data.get(CONF_HOST))
+    _LOGGER.debug(
+        "Checking if entry uses discovery - CONF_HOST: %s", entry.data.get(CONF_HOST)
+    )
     if entry.data.get(CONF_HOST) is None:  # Only if using discovery
         _LOGGER.debug("Entry uses discovery, handling discovery cleanup")
-        hass.data[DOMAIN]["discovery_count"] = max(0, hass.data[DOMAIN]["discovery_count"] - 1)
-        _LOGGER.debug("Discovery count after decrement: %d", hass.data[DOMAIN]["discovery_count"])
-        
+        hass.data[DOMAIN]["discovery_count"] = max(
+            0, hass.data[DOMAIN]["discovery_count"] - 1
+        )
+        _LOGGER.debug(
+            "Discovery count after decrement: %d", hass.data[DOMAIN]["discovery_count"]
+        )
+
         # Always preserve discovered devices during reload, even if discovery service continues running
         discovery = hass.data[DOMAIN][DATA_DISCOVERY]
         _LOGGER.debug("Discovery service exists: %s", discovery is not None)
@@ -367,23 +433,35 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 saved_discovered = {}
                 with discovery._lock:
                     saved_discovered = discovery._discovered.copy()
-                    _LOGGER.debug("Discovery service _discovered contents: %s", dict(discovery._discovered))
-                    _LOGGER.debug("Discovery service _registered contents: %s", dict(discovery._registered))
-                
-                _LOGGER.debug("Saved discovered devices during unload: %s", list(saved_discovered.keys()))
-                
+                    _LOGGER.debug(
+                        "Discovery service _discovered contents: %s",
+                        dict(discovery._discovered),
+                    )
+                    _LOGGER.debug(
+                        "Discovery service _registered contents: %s",
+                        dict(discovery._registered),
+                    )
+
+                _LOGGER.debug(
+                    "Saved discovered devices during unload: %s",
+                    list(saved_discovered.keys()),
+                )
+
                 # Always preserve discovered devices for potential reload
                 # This ensures that devices can reconnect immediately after reload
                 if saved_discovered:
-                    _LOGGER.debug("Preserving discovered devices for potential reload: %s", list(saved_discovered.keys()))
+                    _LOGGER.debug(
+                        "Preserving discovered devices for potential reload: %s",
+                        list(saved_discovered.keys()),
+                    )
                     # Store the discovered devices in hass.data for potential reuse
                     hass.data[DOMAIN]["preserved_discovered"] = saved_discovered
                 else:
                     _LOGGER.debug("No discovered devices to preserve")
-                
+
             except Exception as e:
                 _LOGGER.warning("Error preserving discovery data: %s", e)
-        
+
         # Only stop discovery service if no other devices are using it
         if hass.data[DOMAIN]["discovery_count"] <= 0:
             _LOGGER.debug("Stopping dyson discovery - no more devices using it")
@@ -396,57 +474,66 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 hass.data[DOMAIN][DATA_DISCOVERY] = None
             hass.data[DOMAIN]["discovery_count"] = 0
         else:
-            _LOGGER.debug("Discovery service continues running - %d devices still using it", hass.data[DOMAIN]["discovery_count"])
+            _LOGGER.debug(
+                "Discovery service continues running - %d devices still using it",
+                hass.data[DOMAIN]["discovery_count"],
+            )
     else:
         _LOGGER.debug("Entry uses static host, skipping discovery cleanup")
-    
+
     # Clean up coordinator
     coordinator = hass.data[DOMAIN][DATA_COORDINATORS].pop(entry.entry_id, None)
     if coordinator:
         try:
             # Stop the coordinator if it's running
-            if hasattr(coordinator, 'async_shutdown'):
+            if hasattr(coordinator, "async_shutdown"):
                 await coordinator.async_shutdown()
             _LOGGER.debug("Successfully shut down coordinator for %s", device.serial)
         except Exception as e:
-            _LOGGER.warning("Error shutting down coordinator for %s: %s", device.serial, e)
-    
+            _LOGGER.warning(
+                "Error shutting down coordinator for %s: %s", device.serial, e
+            )
+
     # Remove from data dictionaries
     hass.data[DOMAIN][DATA_DEVICES].pop(entry.entry_id, None)
-    
+
     # Disconnect device
     try:
         await hass.async_add_executor_job(device.disconnect)
         _LOGGER.debug("Successfully disconnected device %s", device.serial)
     except Exception as e:
         _LOGGER.warning("Error disconnecting device %s: %s", device.serial, e)
-    
+
     # Give the device a moment to fully disconnect before returning
     # This helps prevent connection issues during immediate reload
     await asyncio.sleep(0.1)
-    
+
     # Ensure entity registry has time to process the unload
     # This is critical for proper entity lifecycle during reload
     await asyncio.sleep(0.4)
-    
-    _LOGGER.debug("Completed unload for entry %s (device: %s)", entry.entry_id, device.serial if 'device' in locals() else 'unknown')
+
+    _LOGGER.debug(
+        "Completed unload for entry %s (device: %s)",
+        entry.entry_id,
+        device.serial if "device" in locals() else "unknown",
+    )
     return True  # Always return True since we completed cleanup
 
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Reload Dyson entry."""
     _LOGGER.debug("Reloading entry: %s", entry.entry_id)
-    
+
     # Unload the entry first
     unload_result = await async_unload_entry(hass, entry)
     if not unload_result:
         _LOGGER.error("Failed to unload entry %s during reload", entry.entry_id)
         return False
-    
+
     # Add a longer delay to ensure complete cleanup and entity registry processing
     # This is critical for proper entity lifecycle management during reload
     await asyncio.sleep(1.5)
-    
+
     # Set up the entry again
     try:
         setup_result = await async_setup_entry(hass, entry)
@@ -454,18 +541,22 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.error("Failed to set up entry %s during reload", entry.entry_id)
             return False
     except Exception as e:
-        _LOGGER.error("Exception during setup of entry %s during reload: %s", entry.entry_id, e)
+        _LOGGER.error(
+            "Exception during setup of entry %s during reload: %s", entry.entry_id, e
+        )
         return False
-    
+
     _LOGGER.debug("Successfully reloaded entry: %s", entry.entry_id)
     return True
 
 
 @callback
 def _async_get_platforms(device: DysonDevice) -> List[str]:
-    if (isinstance(device, Dyson360Eye)
-            or isinstance(device, Dyson360Heurist)
-            or isinstance(device, Dyson360VisNav)):
+    if (
+        isinstance(device, Dyson360Eye)
+        or isinstance(device, Dyson360Heurist)
+        or isinstance(device, Dyson360VisNav)
+    ):
         return ["binary_sensor", "sensor", "vacuum"]
     platforms = ["fan", "select", "sensor", "switch"]
     if isinstance(device, DysonPureHotCool):
@@ -474,10 +565,18 @@ def _async_get_platforms(device: DysonDevice) -> List[str]:
         platforms.extend(["binary_sensor", "climate"])
     if isinstance(device, DysonPurifierHumidifyCool):
         platforms.append("humidifier")
-    if hasattr(device, "filter_life") or hasattr(device, "carbon_filter_life") or hasattr(device, "hepa_filter_life"):
+    if (
+        hasattr(device, "filter_life")
+        or hasattr(device, "carbon_filter_life")
+        or hasattr(device, "hepa_filter_life")
+    ):
         platforms.append("button")
     # Add number platform for devices that support oscillation angle control
-    if hasattr(device, "oscillation_angle_low") and hasattr(device, "oscillation_angle_high") and hasattr(device, "enable_oscillation"):
+    if (
+        hasattr(device, "oscillation_angle_low")
+        and hasattr(device, "oscillation_angle_high")
+        and hasattr(device, "enable_oscillation")
+    ):
         platforms.append("number")
     return platforms
 
@@ -502,7 +601,9 @@ class DysonEntity(Entity):
         try:
             self._device.remove_message_listener(self._on_message)
         except Exception as e:
-            _LOGGER.debug("Error removing message listener for %s: %s", self.unique_id, e)
+            _LOGGER.debug(
+                "Error removing message listener for %s: %s", self.unique_id, e
+            )
 
     def _on_message(self, message_type: MessageType) -> None:
         if self._MESSAGE_TYPE is None or message_type == self._MESSAGE_TYPE:
@@ -512,69 +613,91 @@ class DysonEntity(Entity):
         """Check if this is an oscillation-related entity."""
         # Only consider entities that are specifically oscillation-related
         # Don't include all entities from devices that support oscillation
-        return (hasattr(self, 'sub_unique_id') and 
-                self.sub_unique_id and
-                ('oscillation' in self.sub_unique_id or 
-                 'angle' in self.sub_unique_id))
+        return (
+            hasattr(self, "sub_unique_id")
+            and self.sub_unique_id
+            and ("oscillation" in self.sub_unique_id or "angle" in self.sub_unique_id)
+        )
 
     def _schedule_oscillation_entities_update_debounced(self) -> None:
         """Schedule state updates for oscillation-related entities with debouncing."""
         device_serial = self._device.serial
         current_time = time.time()
-        
+
         # Check if we've updated recently (within 0.5 seconds) to prevent loops
-        if (device_serial in _oscillation_update_timestamps and 
-            current_time - _oscillation_update_timestamps[device_serial] < 0.5):
-            _LOGGER.debug("Skipping oscillation sync for %s - recent update", device_serial)
+        if (
+            device_serial in _oscillation_update_timestamps
+            and current_time - _oscillation_update_timestamps[device_serial] < 0.5
+        ):
+            _LOGGER.debug(
+                "Skipping oscillation sync for %s - recent update", device_serial
+            )
             return
-        
+
         # Update timestamp
         _oscillation_update_timestamps[device_serial] = current_time
-        
+
         # Schedule the actual update
         self._schedule_oscillation_entities_update()
 
     def _schedule_oscillation_entities_update(self) -> None:
         """Schedule state updates for oscillation-related entities."""
-        _LOGGER.debug("Scheduling oscillation entities update for device %s", self._device.serial)
-        
+        _LOGGER.debug(
+            "Scheduling oscillation entities update for device %s", self._device.serial
+        )
+
         # This will be called from entity classes when oscillation settings change
         # The message listener mechanism should handle the updates automatically
         # Don't force additional status requests as they may interfere with normal data flow
-        
+
         # Also trigger direct entity updates
         self._trigger_oscillation_entities_update()
-        
+
         # Schedule a delayed update as well to catch any slow device responses
-        if hasattr(self.hass, 'call_later'):
+        if hasattr(self.hass, "call_later"):
+
             def delayed_update(_):
                 """Delayed update to catch slow device responses."""
-                _LOGGER.debug("Executing delayed oscillation entities update for device %s", self._device.serial)
+                _LOGGER.debug(
+                    "Executing delayed oscillation entities update for device %s",
+                    self._device.serial,
+                )
                 self._trigger_oscillation_entities_update()
-            
+
             self.hass.call_later(0.5, delayed_update)
-            
+
     def _trigger_oscillation_entities_update(self) -> None:
         """Trigger updates for all oscillation-related entities."""
-        _LOGGER.debug("Triggering oscillation entities update for device %s", self._device.serial)
-        
+        _LOGGER.debug(
+            "Triggering oscillation entities update for device %s", self._device.serial
+        )
+
         # Schedule updates for all entities through the device's message system
         # This ensures that all entities get the latest state from the device
-        if hasattr(self._device, '_callbacks'):
+        if hasattr(self._device, "_callbacks"):
             updated_count = 0
             for callback in self._device._callbacks:
                 # Check if the callback is from a DysonEntity (has _is_oscillation_entity method)
-                if hasattr(callback, '__self__') and hasattr(callback.__self__, '_is_oscillation_entity'):
+                if hasattr(callback, "__self__") and hasattr(
+                    callback.__self__, "_is_oscillation_entity"
+                ):
                     entity = callback.__self__
                     if entity._is_oscillation_entity():
                         try:
                             entity.schedule_update_ha_state(force_refresh=True)
                             updated_count += 1
-                            _LOGGER.debug("Triggered update for oscillation entity: %s", getattr(entity, 'entity_id', 'unknown'))
+                            _LOGGER.debug(
+                                "Triggered update for oscillation entity: %s",
+                                getattr(entity, "entity_id", "unknown"),
+                            )
                         except Exception as e:
                             _LOGGER.debug("Error triggering update for entity: %s", e)
-            
-            _LOGGER.debug("Triggered updates for %d oscillation entities for device %s", updated_count, self._device.serial)
+
+            _LOGGER.debug(
+                "Triggered updates for %d oscillation entities for device %s",
+                updated_count,
+                self._device.serial,
+            )
         else:
             _LOGGER.debug("Device %s has no _callbacks attribute", self._device.serial)
 
@@ -587,26 +710,35 @@ class DysonEntity(Entity):
         """Check if oscillation state changed and trigger sync if needed."""
         try:
             current_state = self._get_current_oscillation_state()
-            
-            if self._last_oscillation_state is not None and current_state != self._last_oscillation_state:
-                _LOGGER.debug("Oscillation state change detected in %s: %s -> %s", 
-                             self.unique_id, self._last_oscillation_state, current_state)
+
+            if (
+                self._last_oscillation_state is not None
+                and current_state != self._last_oscillation_state
+            ):
+                _LOGGER.debug(
+                    "Oscillation state change detected in %s: %s -> %s",
+                    self.unique_id,
+                    self._last_oscillation_state,
+                    current_state,
+                )
                 # State changed - trigger sync for all related entities
                 self._schedule_oscillation_entities_update_debounced()
-            
+
             self._last_oscillation_state = current_state
         except Exception as e:
-            _LOGGER.debug("Error checking oscillation state change in %s: %s", self.unique_id, e)
-    
+            _LOGGER.debug(
+                "Error checking oscillation state change in %s: %s", self.unique_id, e
+            )
+
     def _get_current_oscillation_state(self) -> dict:
         """Get the current oscillation state for comparison."""
         # Return relevant oscillation state that should trigger sync when changed
-        if hasattr(self._device, 'oscillation_angle_low'):
+        if hasattr(self._device, "oscillation_angle_low"):
             return {
-                'oscillation': getattr(self._device, 'oscillation', None),
-                'angle_low': getattr(self._device, 'oscillation_angle_low', None),
-                'angle_high': getattr(self._device, 'oscillation_angle_high', None),
-                'center': getattr(self._device, 'oscillation_center', None),
+                "oscillation": getattr(self._device, "oscillation", None),
+                "angle_low": getattr(self._device, "oscillation_angle_low", None),
+                "angle_high": getattr(self._device, "oscillation_angle_high", None),
+                "center": getattr(self._device, "oscillation_center", None),
             }
         return {}
 
@@ -649,67 +781,103 @@ class DysonEntity(Entity):
             "model": self._device.device_type,
         }
 
+
 async def _async_register_device_with_discovery(
-    hass: HomeAssistant, discovery: DysonDiscovery, device: DysonDevice, setup_entry, entry: ConfigEntry
+    hass: HomeAssistant,
+    discovery: DysonDiscovery,
+    device: DysonDevice,
+    setup_entry,
+    entry: ConfigEntry,
 ) -> None:
     """Register device with discovery service with enhanced handling."""
     _LOGGER.debug("Registering device %s with discovery service", device.serial)
-    
+
     # Check what devices are currently discovered
     with discovery._lock:
         discovered_devices = list(discovery._discovered.keys())
         _LOGGER.debug("Currently discovered devices: %s", discovered_devices)
-        
+
         if device.serial in discovery._discovered:
             discovered_ip = discovery._discovered[device.serial]
-            _LOGGER.debug("Device %s already discovered at %s, should trigger immediate callback", device.serial, discovered_ip)
-    
+            _LOGGER.debug(
+                "Device %s already discovered at %s, should trigger immediate callback",
+                device.serial,
+                discovered_ip,
+            )
+
     # Register the device with discovery
-    await hass.async_add_executor_job(
-        discovery.register_device, device, setup_entry
-    )
+    await hass.async_add_executor_job(discovery.register_device, device, setup_entry)
     _LOGGER.debug("Registered device %s with discovery", device.serial)
-    
+
     # Give discovery a moment to potentially call the setup callback
     # In case the device was already discovered
     await asyncio.sleep(0.5)
-    
+
     # Check if the device was actually connected
     if entry.entry_id not in hass.data[DOMAIN][DATA_DEVICES]:
         # Check if we have a cached IP for this device
         device_ips = hass.data[DOMAIN].get("device_ips", {})
         if device.serial in device_ips:
             cached_ip = device_ips[device.serial]
-            _LOGGER.debug("Found cached IP %s for device %s, attempting connection", cached_ip, device.serial)
+            _LOGGER.debug(
+                "Found cached IP %s for device %s, attempting connection",
+                cached_ip,
+                device.serial,
+            )
             try:
                 # Call setup_entry directly with the cached IP
                 result = await hass.async_add_executor_job(
                     partial(setup_entry, cached_ip, is_discovery=True)
                 )
                 if result:
-                    _LOGGER.debug("Successfully connected device %s via cached IP", device.serial)
+                    _LOGGER.debug(
+                        "Successfully connected device %s via cached IP", device.serial
+                    )
                 else:
-                    _LOGGER.warning("Failed to connect device %s via cached IP", device.serial)
+                    _LOGGER.warning(
+                        "Failed to connect device %s via cached IP", device.serial
+                    )
             except Exception as e:
-                _LOGGER.error("Error attempting cached IP connection for device %s: %s", device.serial, e)
+                _LOGGER.error(
+                    "Error attempting cached IP connection for device %s: %s",
+                    device.serial,
+                    e,
+                )
         else:
             # Check if we have preserved discovered data as fallback
             preserved_discovered = hass.data[DOMAIN].get("preserved_discovered", {})
             if device.serial in preserved_discovered:
                 discovered_ip = preserved_discovered[device.serial]
-                _LOGGER.debug("Found device %s at IP %s in preserved discovery data, attempting connection", device.serial, discovered_ip)
+                _LOGGER.debug(
+                    "Found device %s at IP %s in preserved discovery data, attempting connection",
+                    device.serial,
+                    discovered_ip,
+                )
                 try:
                     # Call setup_entry directly with the preserved IP
                     result = await hass.async_add_executor_job(
                         partial(setup_entry, discovered_ip, is_discovery=True)
                     )
                     if result:
-                        _LOGGER.debug("Successfully connected device %s via preserved discovery IP", device.serial)
+                        _LOGGER.debug(
+                            "Successfully connected device %s via preserved discovery IP",
+                            device.serial,
+                        )
                     else:
-                        _LOGGER.warning("Failed to connect device %s via preserved discovery IP", device.serial)
+                        _LOGGER.warning(
+                            "Failed to connect device %s via preserved discovery IP",
+                            device.serial,
+                        )
                 except Exception as e:
-                    _LOGGER.error("Error attempting preserved discovery connection for device %s: %s", device.serial, e)
+                    _LOGGER.error(
+                        "Error attempting preserved discovery connection for device %s: %s",
+                        device.serial,
+                        e,
+                    )
             else:
-                _LOGGER.info("Device %s will connect when discovered by the discovery service", device.serial)
+                _LOGGER.info(
+                    "Device %s will connect when discovered by the discovery service",
+                    device.serial,
+                )
                 # For discovery-based devices, this is normal - they connect when discovered
                 # Don't treat this as an error, the device will connect when found

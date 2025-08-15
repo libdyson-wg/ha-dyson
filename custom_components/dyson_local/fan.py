@@ -4,14 +4,14 @@ import logging
 import math
 from typing import Any, Callable, List, Mapping, Optional
 
-from .vendor.libdyson import DysonPureCool, DysonPureCoolLink, MessageType
+from libdyson import DysonPureCool, DysonPureCoolLink, MessageType
 import voluptuous as vol
 
 from homeassistant.components.fan import (
     DIRECTION_FORWARD,
     DIRECTION_REVERSE,
-    FanEntityFeature,
     FanEntity,
+    FanEntityFeature,
     NotValidPresetModeError,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -100,25 +100,53 @@ class DysonFanEntity(DysonEntity, FanEntity):
     def __getattribute__(self, name):
         """Override to log method calls."""
         attr = super().__getattribute__(name)
-        if callable(attr) and not name.startswith('_') and name not in ['hass', 'entity_id', 'name']:
+        if (
+            callable(attr)
+            and not name.startswith("_")
+            and name not in ["hass", "entity_id", "name"]
+        ):
             # Log ALL method calls to see what Home Assistant is trying to call
-            _LOGGER.debug("Method %s accessed on fan entity %s", name, getattr(self, 'entity_id', 'unknown'))
-        elif name in ['oscillating', 'current_direction', 'angle_low', 'angle_high', 'percentage', 'preset_mode']:
+            _LOGGER.debug(
+                "Method %s accessed on fan entity %s",
+                name,
+                getattr(self, "entity_id", "unknown"),
+            )
+        elif name in [
+            "oscillating",
+            "current_direction",
+            "angle_low",
+            "angle_high",
+            "percentage",
+            "preset_mode",
+        ]:
             # Log important property access
-            _LOGGER.debug("Property %s accessed on fan entity %s", name, getattr(self, 'entity_id', 'unknown'))
+            _LOGGER.debug(
+                "Property %s accessed on fan entity %s",
+                name,
+                getattr(self, "entity_id", "unknown"),
+            )
         return attr
 
     def __setattr__(self, name, value):
         """Log all attribute setting attempts."""
-        if not name.startswith('_'):
-            _LOGGER.debug("__setattr__ called: Setting %s = %s for device %s", name, value, getattr(self._device, 'serial', 'Unknown'))
+        if not name.startswith("_"):
+            _LOGGER.debug(
+                "__setattr__ called: Setting %s = %s for device %s",
+                name,
+                value,
+                getattr(self._device, "serial", "Unknown"),
+            )
         super().__setattr__(name, value)
 
     @property
     def is_on(self) -> bool:
         """Return if the fan is on."""
         state = self._device.is_on
-        _LOGGER.debug("is_on property accessed for device %s, returning %s", self._device.serial, state)
+        _LOGGER.debug(
+            "is_on property accessed for device %s, returning %s",
+            self._device.serial,
+            state,
+        )
         return state
 
     @property
@@ -142,7 +170,11 @@ class DysonFanEntity(DysonEntity, FanEntity):
 
     def set_percentage(self, percentage: int) -> None:
         """Set the speed percentage of the fan."""
-        _LOGGER.debug("set_percentage() called with %s for device %s", percentage, self._device.serial)
+        _LOGGER.debug(
+            "set_percentage() called with %s for device %s",
+            percentage,
+            self._device.serial,
+        )
         if percentage == 0:
             self._device.turn_off()
             return
@@ -166,7 +198,11 @@ class DysonFanEntity(DysonEntity, FanEntity):
 
     def set_preset_mode(self, preset_mode: str) -> None:
         """Configure the preset mode."""
-        _LOGGER.debug("set_preset_mode() called with %s for device %s", preset_mode, self._device.serial)
+        _LOGGER.debug(
+            "set_preset_mode() called with %s for device %s",
+            preset_mode,
+            self._device.serial,
+        )
         if preset_mode == PRESET_MODE_AUTO:
             self._device.enable_auto_mode()
         elif preset_mode == PRESET_MODE_NORMAL:
@@ -178,7 +214,11 @@ class DysonFanEntity(DysonEntity, FanEntity):
     def oscillating(self):
         """Return the oscillation state."""
         state = self._device.oscillation
-        _LOGGER.debug("oscillating property accessed for device %s, returning %s", self._device.serial, state)
+        _LOGGER.debug(
+            "oscillating property accessed for device %s, returning %s",
+            self._device.serial,
+            state,
+        )
         return state
 
     @property
@@ -196,29 +236,42 @@ class DysonFanEntity(DysonEntity, FanEntity):
         _LOGGER.debug("Turn on fan %s with percentage %s", self.name, percentage)
         if kwargs:
             _LOGGER.debug("Additional parameters received: %s", kwargs)
-        
+
         # Handle ALL possible kwargs that might be passed from scenes
         for key, value in kwargs.items():
             _LOGGER.debug("Processing kwarg: %s = %s", key, value)
-        
+
         # Handle oscillating parameter for scenes
         oscillating = kwargs.get("oscillating")
         if oscillating is not None:
-            _LOGGER.debug("Setting oscillation to %s for device %s", oscillating, self._device.serial)
+            _LOGGER.debug(
+                "Setting oscillation to %s for device %s",
+                oscillating,
+                self._device.serial,
+            )
             self.oscillate(oscillating)
-        
+
         # Handle angle parameters that might be passed from scenes
         angle_low = kwargs.get("angle_low")
         angle_high = kwargs.get("angle_high")
         if angle_low is not None and angle_high is not None:
-            _LOGGER.debug("Setting oscillation angles to %s-%s for device %s", angle_low, angle_high, self._device.serial)
-            if hasattr(self, 'set_angle'):
+            _LOGGER.debug(
+                "Setting oscillation angles to %s-%s for device %s",
+                angle_low,
+                angle_high,
+                self._device.serial,
+            )
+            if hasattr(self, "set_angle"):
                 self.set_angle(int(angle_low), int(angle_high))
-        
+
         # Handle center point parameter that might be passed from scenes
         oscillation_center = kwargs.get("oscillation_center")
         if oscillation_center is not None:
-            _LOGGER.debug("Setting oscillation center to %s for device %s", oscillation_center, self._device.serial)
+            _LOGGER.debug(
+                "Setting oscillation center to %s for device %s",
+                oscillation_center,
+                self._device.serial,
+            )
             # Convert center to angles using current range
             current_low = self._device.oscillation_angle_low
             current_high = self._device.oscillation_angle_high
@@ -226,15 +279,17 @@ class DysonFanEntity(DysonEntity, FanEntity):
             center = float(oscillation_center)
             new_low = int(center - (current_range / 2))
             new_high = int(center + (current_range / 2))
-            if hasattr(self, 'set_angle'):
+            if hasattr(self, "set_angle"):
                 self.set_angle(new_low, new_high)
-        
+
         # Handle direction parameter for scenes (if supported)
         direction = kwargs.get("direction")
         if direction is not None and hasattr(self, "set_direction"):
-            _LOGGER.debug("Setting direction to %s for device %s", direction, self._device.serial)
+            _LOGGER.debug(
+                "Setting direction to %s for device %s", direction, self._device.serial
+            )
             self.set_direction(direction)
-        
+
         if preset_mode:
             self.set_preset_mode(preset_mode)
         if percentage:
@@ -250,32 +305,51 @@ class DysonFanEntity(DysonEntity, FanEntity):
         **kwargs,
     ) -> None:
         """Turn on the fan asynchronously."""
-        _LOGGER.debug("async_turn_on() called: Turn on fan %s with percentage %s", self.name, percentage)
+        _LOGGER.debug(
+            "async_turn_on() called: Turn on fan %s with percentage %s",
+            self.name,
+            percentage,
+        )
         if kwargs:
             _LOGGER.debug("async_turn_on() Additional parameters received: %s", kwargs)
-        
+
         # Handle ALL possible kwargs that might be passed from scenes
         for key, value in kwargs.items():
             _LOGGER.debug("async_turn_on() Processing kwarg: %s = %s", key, value)
-        
+
         # Handle oscillating parameter for scenes
         oscillating = kwargs.get("oscillating")
         if oscillating is not None:
-            _LOGGER.debug("async_turn_on() Setting oscillation to %s for device %s", oscillating, self._device.serial)
+            _LOGGER.debug(
+                "async_turn_on() Setting oscillation to %s for device %s",
+                oscillating,
+                self._device.serial,
+            )
             await self.hass.async_add_executor_job(self.oscillate, oscillating)
-        
+
         # Handle angle parameters that might be passed from scenes
         angle_low = kwargs.get("angle_low")
         angle_high = kwargs.get("angle_high")
         if angle_low is not None and angle_high is not None:
-            _LOGGER.debug("async_turn_on() Setting oscillation angles to %s-%s for device %s", angle_low, angle_high, self._device.serial)
-            if hasattr(self, 'set_angle'):
-                await self.hass.async_add_executor_job(self.set_angle, int(angle_low), int(angle_high))
-        
+            _LOGGER.debug(
+                "async_turn_on() Setting oscillation angles to %s-%s for device %s",
+                angle_low,
+                angle_high,
+                self._device.serial,
+            )
+            if hasattr(self, "set_angle"):
+                await self.hass.async_add_executor_job(
+                    self.set_angle, int(angle_low), int(angle_high)
+                )
+
         # Handle center point parameter that might be passed from scenes
         oscillation_center = kwargs.get("oscillation_center")
         if oscillation_center is not None:
-            _LOGGER.debug("async_turn_on() Setting oscillation center to %s for device %s", oscillation_center, self._device.serial)
+            _LOGGER.debug(
+                "async_turn_on() Setting oscillation center to %s for device %s",
+                oscillation_center,
+                self._device.serial,
+            )
             # Convert center to angles using current range
             current_low = self._device.oscillation_angle_low
             current_high = self._device.oscillation_angle_high
@@ -283,21 +357,29 @@ class DysonFanEntity(DysonEntity, FanEntity):
             center = float(oscillation_center)
             new_low = int(center - (current_range / 2))
             new_high = int(center + (current_range / 2))
-            if hasattr(self, 'set_angle'):
-                await self.hass.async_add_executor_job(self.set_angle, new_low, new_high)
-        
+            if hasattr(self, "set_angle"):
+                await self.hass.async_add_executor_job(
+                    self.set_angle, new_low, new_high
+                )
+
         # Handle direction parameter for scenes (if supported)
         direction = kwargs.get("direction")
         if direction is not None and hasattr(self, "set_direction"):
-            _LOGGER.debug("async_turn_on() Setting direction to %s for device %s", direction, self._device.serial)
+            _LOGGER.debug(
+                "async_turn_on() Setting direction to %s for device %s",
+                direction,
+                self._device.serial,
+            )
             await self.hass.async_add_executor_job(self.set_direction, direction)
-        
+
         if preset_mode:
             await self.hass.async_add_executor_job(self.set_preset_mode, preset_mode)
         if percentage:
             await self.hass.async_add_executor_job(self.set_percentage, percentage)
 
-        _LOGGER.debug("async_turn_on() Calling turn_on() for device %s", self._device.serial)
+        _LOGGER.debug(
+            "async_turn_on() Calling turn_on() for device %s", self._device.serial
+        )
         await self.hass.async_add_executor_job(self._device.turn_on)
 
     def turn_off(self, **kwargs) -> None:
@@ -310,27 +392,43 @@ class DysonFanEntity(DysonEntity, FanEntity):
 
     def oscillate(self, oscillating: bool) -> None:
         """Turn on/of oscillation."""
-        _LOGGER.debug("oscillate() called: Turn oscillation %s for device %s", oscillating, self.name)
-        _LOGGER.debug("Device %s connected: %s", self._device.serial, self._device.is_connected)
-        
+        _LOGGER.debug(
+            "oscillate() called: Turn oscillation %s for device %s",
+            oscillating,
+            self.name,
+        )
+        _LOGGER.debug(
+            "Device %s connected: %s", self._device.serial, self._device.is_connected
+        )
+
         # Log current oscillation state
         current_state = self._device.oscillation
-        _LOGGER.debug("Current oscillation state: %s, requested: %s", current_state, oscillating)
-        
+        _LOGGER.debug(
+            "Current oscillation state: %s, requested: %s", current_state, oscillating
+        )
+
         if oscillating:
-            _LOGGER.debug("Calling enable_oscillation() for device %s", self._device.serial)
+            _LOGGER.debug(
+                "Calling enable_oscillation() for device %s", self._device.serial
+            )
             self._device.enable_oscillation()
         else:
-            _LOGGER.debug("Calling disable_oscillation() for device %s", self._device.serial)
+            _LOGGER.debug(
+                "Calling disable_oscillation() for device %s", self._device.serial
+            )
             self._device.disable_oscillation()
-        
+
         # Log result
         new_state = self._device.oscillation
         _LOGGER.debug("Oscillation state after change: %s", new_state)
 
     async def async_oscillate(self, oscillating: bool) -> None:
         """Turn on/of oscillation asynchronously."""
-        _LOGGER.debug("async_oscillate() called: Turn oscillation %s for device %s", oscillating, self.name)
+        _LOGGER.debug(
+            "async_oscillate() called: Turn oscillation %s for device %s",
+            oscillating,
+            self.name,
+        )
         await self.hass.async_add_executor_job(self.oscillate, oscillating)
 
     def set_timer(self, timer: int) -> None:
@@ -342,64 +440,78 @@ class DysonFanEntity(DysonEntity, FanEntity):
 
     async def async_set_state(self, **kwargs):
         """Handle setting fan state from Home Assistant."""
-        _LOGGER.debug("async_set_state called with kwargs: %s for device %s", kwargs, self._device.serial)
-        
+        _LOGGER.debug(
+            "async_set_state called with kwargs: %s for device %s",
+            kwargs,
+            self._device.serial,
+        )
+
         # Handle oscillation settings
-        if 'oscillating' in kwargs:
-            oscillating = kwargs['oscillating']
+        if "oscillating" in kwargs:
+            oscillating = kwargs["oscillating"]
             _LOGGER.debug("Setting oscillating to %s via async_set_state", oscillating)
             await self.async_add_executor_job(self.oscillate, oscillating)
-        
+
         # Handle center point / angles
-        if 'oscillation_center' in kwargs:
-            center = kwargs['oscillation_center']
-            _LOGGER.debug("Setting oscillation center to %s via async_set_state", center)
+        if "oscillation_center" in kwargs:
+            center = kwargs["oscillation_center"]
+            _LOGGER.debug(
+                "Setting oscillation center to %s via async_set_state", center
+            )
             # Convert center back to angles (assuming current range)
             current_low = self._device.oscillation_angle_low
             current_high = self._device.oscillation_angle_high
             current_range = current_high - current_low
             new_low = center - (current_range / 2)
             new_high = center + (current_range / 2)
-            await self.async_add_executor_job(self.set_angle, int(new_low), int(new_high))
-        
+            await self.async_add_executor_job(
+                self.set_angle, int(new_low), int(new_high)
+            )
+
         # Handle angle settings
-        if 'angle_low' in kwargs and 'angle_high' in kwargs:
-            low = kwargs['angle_low']
-            high = kwargs['angle_high']
+        if "angle_low" in kwargs and "angle_high" in kwargs:
+            low = kwargs["angle_low"]
+            high = kwargs["angle_high"]
             _LOGGER.debug("Setting angles to %s-%s via async_set_state", low, high)
             await self.async_add_executor_job(self.set_angle, low, high)
-        
+
         # Handle other standard fan properties
-        if 'percentage' in kwargs:
-            percentage = kwargs['percentage']
+        if "percentage" in kwargs:
+            percentage = kwargs["percentage"]
             _LOGGER.debug("Setting percentage to %s via async_set_state", percentage)
             await self.async_add_executor_job(self.set_percentage, percentage)
-        
-        if 'preset_mode' in kwargs:
-            preset_mode = kwargs['preset_mode']
+
+        if "preset_mode" in kwargs:
+            preset_mode = kwargs["preset_mode"]
             _LOGGER.debug("Setting preset_mode to %s via async_set_state", preset_mode)
             await self.async_add_executor_job(self.set_preset_mode, preset_mode)
-        
-        if 'direction' in kwargs:
-            direction = kwargs['direction']
+
+        if "direction" in kwargs:
+            direction = kwargs["direction"]
             _LOGGER.debug("Setting direction to %s via async_set_state", direction)
             await self.async_add_executor_job(self.set_direction, direction)
 
     async def async_handle_service_call(self, service_name: str, **kwargs):
         """Handle service calls that might be made to the fan entity."""
-        _LOGGER.debug("async_handle_service_call called: %s with kwargs: %s for device %s", service_name, kwargs, self._device.serial)
-        
+        _LOGGER.debug(
+            "async_handle_service_call called: %s with kwargs: %s for device %s",
+            service_name,
+            kwargs,
+            self._device.serial,
+        )
+
         if service_name == "set_fan_state":
             await self.async_set_state(**kwargs)
         elif service_name == "turn_on":
             await self.async_turn_on(**kwargs)
         elif service_name == "set_oscillating":
-            oscillating = kwargs.get('oscillating', False)
+            oscillating = kwargs.get("oscillating", False)
             await self.async_oscillate(oscillating)
         elif service_name == "set_angle":
-            low = kwargs.get('angle_low', 0)
-            high = kwargs.get('angle_high', 0)
+            low = kwargs.get("angle_low", 0)
+            high = kwargs.get("angle_high", 0)
             await self.async_add_executor_job(self.set_angle, low, high)
+
 
 class DysonPureCoolLinkEntity(DysonFanEntity):
     """Dyson Pure Cool Link entity."""
@@ -423,7 +535,11 @@ class DysonPureCoolEntity(DysonFanEntity):
 
     def set_direction(self, direction: str) -> None:
         """Configure the airflow direction."""
-        _LOGGER.debug("set_direction() called with %s for device %s", direction, self._device.serial)
+        _LOGGER.debug(
+            "set_direction() called with %s for device %s",
+            direction,
+            self._device.serial,
+        )
         if direction == DIRECTION_FORWARD:
             self._device.enable_front_airflow()
         elif direction == DIRECTION_REVERSE:
@@ -448,16 +564,20 @@ class DysonPureCoolEntity(DysonFanEntity):
             ATTR_ANGLE_LOW: self.angle_low,
             ATTR_ANGLE_HIGH: self.angle_high,
         }
-        
+
         # Add oscillation range information if supported
-        if hasattr(self._device, 'oscillation_angle_low') and hasattr(self._device, 'oscillation_angle_high'):
+        if hasattr(self._device, "oscillation_angle_low") and hasattr(
+            self._device, "oscillation_angle_high"
+        ):
             low_angle = self._device.oscillation_angle_low
             high_angle = self._device.oscillation_angle_high
-            
+
             # Calculate range and center
             angle_range = high_angle - low_angle if high_angle >= low_angle else 0
-            center_angle = (low_angle + high_angle) / 2 if high_angle >= low_angle else 0
-            
+            center_angle = (
+                (low_angle + high_angle) / 2 if high_angle >= low_angle else 0
+            )
+
             # Determine oscillation range preset
             oscillation_range_preset = "off"
             if self._device.oscillation:
@@ -471,13 +591,15 @@ class DysonPureCoolEntity(DysonFanEntity):
                     oscillation_range_preset = "350"
                 else:
                     oscillation_range_preset = "custom"
-            
-            attributes.update({
-                "oscillation_range": angle_range,
-                "oscillation_center": round(center_angle, 1),
-                "oscillation_range_preset": oscillation_range_preset,
-            })
-        
+
+            attributes.update(
+                {
+                    "oscillation_range": angle_range,
+                    "oscillation_center": round(center_angle, 1),
+                    "oscillation_range_preset": oscillation_range_preset,
+                }
+            )
+
         return attributes
 
     def set_angle(self, angle_low: int, angle_high: int) -> None:
@@ -488,14 +610,14 @@ class DysonPureCoolEntity(DysonFanEntity):
             angle_high,
             self.name,
         )
-        
+
         # Log current angles
         current_low = self._device.oscillation_angle_low
         current_high = self._device.oscillation_angle_high
         _LOGGER.debug("Current angles: low=%s, high=%s", current_low, current_high)
-        
+
         self._device.enable_oscillation(angle_low, angle_high)
-        
+
         # Log result
         new_low = self._device.oscillation_angle_low
         new_high = self._device.oscillation_angle_high

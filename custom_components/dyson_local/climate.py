@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from .const import DATA_DEVICES, DOMAIN
 from .utils import environmental_property
-from .vendor.libdyson import DysonPureHotCoolLink
+from libdyson import DysonPureHotCoolLink
 
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (

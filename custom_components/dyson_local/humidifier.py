@@ -2,7 +2,7 @@
 
 from typing import Callable, Optional
 
-from .vendor.libdyson import MessageType
+from libdyson import MessageType
 
 from homeassistant.components.humidifier import (
     HumidifierDeviceClass,

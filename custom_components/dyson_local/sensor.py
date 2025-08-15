@@ -2,7 +2,7 @@
 
 from typing import Callable, Union, Optional
 
-from .vendor.libdyson import (
+from libdyson import (
     Dyson360Eye,
     Dyson360Heurist,
     Dyson360VisNav,
@@ -12,8 +12,8 @@ from .vendor.libdyson import (
     DysonBigQuiet,
 )
 
-from .vendor.libdyson.const import MessageType
-from .vendor.libdyson.dyson_device import DysonFanDevice
+from libdyson.const import MessageType
+from libdyson.dyson_device import DysonFanDevice
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
