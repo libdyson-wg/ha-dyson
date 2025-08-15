@@ -24,7 +24,7 @@ from .const import (
     DATA_DISCOVERY,
     DOMAIN,
 )
-from .vendor.libdyson import (
+from libdyson import (
     Dyson360Eye,
     Dyson360Heurist,
     Dyson360VisNav,
@@ -34,10 +34,10 @@ from .vendor.libdyson import (
     MessageType,
     get_device,
 )
-from .vendor.libdyson.cloud import DysonAccount, DysonAccountCN
-from .vendor.libdyson.discovery import DysonDiscovery
-from .vendor.libdyson.dyson_device import DysonDevice
-from .vendor.libdyson.exceptions import (
+from libdyson.cloud import DysonAccount, DysonAccountCN
+from libdyson.discovery import DysonDiscovery
+from libdyson.dyson_device import DysonDevice
+from libdyson.exceptions import (
     DysonException,
     DysonInvalidAuth,
     DysonLoginFailure,

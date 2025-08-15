@@ -2,7 +2,7 @@
 
 from typing import Callable
 
-from .vendor.libdyson import (
+from libdyson import (
     Dyson360Eye,
     Dyson360Heurist,
     Dyson360VisNav,

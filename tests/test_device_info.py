@@ -4,11 +4,12 @@ from unittest.mock import patch
 
 import pytest
 
-from custom_components.dyson_local.vendor.libdyson.cloud.device_info import (
+from libdyson.cloud.device_info import (
     DysonDeviceInfo,
     map_product_type_to_device_type,
 )
-from custom_components.dyson_local.vendor.libdyson.const import (
+
+from libdyson.const import (
     DEVICE_TYPE_360_EYE,
     DEVICE_TYPE_360_HEURIST,
     DEVICE_TYPE_PURE_COOL,
@@ -115,7 +116,7 @@ class TestDysonDeviceInfo:
     """Test the DysonDeviceInfo dataclass."""
 
     @patch(
-        "custom_components.dyson_local.vendor.libdyson.cloud.device_info.decrypt_password"
+        "libdyson.cloud.device_info.decrypt_password"
     )
     def test_from_raw_basic(self, mock_decrypt):
         """Test basic device info creation from raw data."""
@@ -147,7 +148,7 @@ class TestDysonDeviceInfo:
         mock_decrypt.assert_called_once_with("encrypted_password")
 
     @patch(
-        "custom_components.dyson_local.vendor.libdyson.cloud.device_info.decrypt_password"
+        "libdyson.cloud.device_info.decrypt_password"
     )
     def test_from_raw_with_variant(self, mock_decrypt):
         """Test device info creation with variant field."""
@@ -171,7 +172,7 @@ class TestDysonDeviceInfo:
         assert device_info.variant == "M"
 
     @patch(
-        "custom_components.dyson_local.vendor.libdyson.cloud.device_info.decrypt_password"
+        "libdyson.cloud.device_info.decrypt_password"
     )
     def test_from_raw_with_type_field(self, mock_decrypt):
         """Test device info creation when type field contains full type+variant."""
@@ -195,7 +196,7 @@ class TestDysonDeviceInfo:
         assert device_info.variant == "E"
 
     @patch(
-        "custom_components.dyson_local.vendor.libdyson.cloud.device_info.decrypt_password"
+        "libdyson.cloud.device_info.decrypt_password"
     )
     def test_from_raw_variant_from_firmware(self, mock_decrypt):
         """Test variant extraction from firmware version."""
@@ -229,7 +230,7 @@ class TestDysonDeviceInfo:
         assert device_info.variant == "E"
 
     @patch(
-        "custom_components.dyson_local.vendor.libdyson.cloud.device_info.decrypt_password"
+        "libdyson.cloud.device_info.decrypt_password"
     )
     def test_from_raw_ecg2_firmware(self, mock_decrypt):
         """Test E variant detection from ECG2 firmware prefix."""
@@ -250,7 +251,7 @@ class TestDysonDeviceInfo:
         assert device_info.variant == "E"
 
     @patch(
-        "custom_components.dyson_local.vendor.libdyson.cloud.device_info.decrypt_password"
+        "libdyson.cloud.device_info.decrypt_password"
     )
     def test_from_raw_missing_active_field(self, mock_decrypt):
         """Test device info creation when Active field is missing."""
@@ -390,7 +391,7 @@ class TestDysonDeviceInfo:
         assert device_info.get_device_type() == expected
 
     @patch(
-        "custom_components.dyson_local.vendor.libdyson.cloud.device_info.decrypt_password"
+        "libdyson.cloud.device_info.decrypt_password"
     )
     def test_from_raw_with_valid_base64(self, mock_decrypt):
         """Test with a valid base64 encoded password."""
