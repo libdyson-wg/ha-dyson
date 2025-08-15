@@ -2,7 +2,7 @@
 
 from typing import Callable
 
-from .vendor.libdyson import DysonPureHotCoolLink
+from libdyson import DysonPureHotCoolLink
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry

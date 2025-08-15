@@ -4,7 +4,7 @@ import logging
 import math
 from typing import Any, Callable, List, Mapping, Optional
 
-from .vendor.libdyson import DysonPureCool, DysonPureCoolLink, MessageType
+from libdyson import DysonPureCool, DysonPureCoolLink, MessageType
 import voluptuous as vol
 
 from homeassistant.components.fan import (
