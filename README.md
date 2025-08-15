@@ -12,7 +12,7 @@ This is a Home Assistant custom integration for Wi-Fi connected Dyson devices, a
 
 ### Fan connection failures
 
-Please try power-cycling the fan device and try connecting again. 
+Please try power-cycling the fan device and try connecting again.
 
 Dyson fans run an MQTT Broker which this integration connects to as a client. The broker has a connection limit and some devices appear to have a firmware bug where they hold onto dead connections and fill up the connection pool, causing new connections to fail. This behavior has been observed on the following device models, but may also include others:
 
@@ -59,7 +59,6 @@ Once you have installed the integration, navigate to `Settings > Devices` tab, p
 
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha-dyson)
 
-
 ### Setup using device Wi-Fi information
 
 Note: New models released after 2020 do not ship with a Wi-Fi information sticker. These models are still supported by this integration, but can only be configured via your MyDyson account or with the manual setup described below. After setting up your devices, your account can be deleted from Home Assistant if you prefer to stay offline.
@@ -82,7 +81,6 @@ If you want to manually set up a Dyson device, you need to get credentials first
 
 This is a **custom integration** not a **custom add-on**. You need to install [HACS](https://hacs.xyz/) and add this repo there.
 
-
 ### How do I migrate from [shenxn/ha-dyson](https://github.com/shenxn/ha-dyson)?
 
 #### Before we look into the migration options, a note on sensors for Volatile Organic Compounts and Nitrogen Dioxide
@@ -97,12 +95,12 @@ You can delete the old entities, which should now be unavailable, from your Home
 
 #### Experimental no-reconfiguration migration
 
- This is less proven, but it is possible to switch over with zero impact to your current integration configuration, entities/devices, or dashboards. I don't know what side-effects it may have though (leftover old config data might start causing issues or something - no guarantees).
+This is less proven, but it is possible to switch over with zero impact to your current integration configuration, entities/devices, or dashboards. I don't know what side-effects it may have though (leftover old config data might start causing issues or something - no guarantees).
 
 1. Remove the ha-dyson and ha-dyson-cloud custom repositories from HACS
-    - _Without_ removing the integrations themselves
-3. Install the new [ha-dyson](https://github.com/libdyson-wg/ha-dyson)
-    - If you installed this as a Custom Repository, update the ha-dyson repository using the HACS updater
+   - _Without_ removing the integrations themselves
+2. Install the new [ha-dyson](https://github.com/libdyson-wg/ha-dyson)
+   - If you installed this as a Custom Repository, update the ha-dyson repository using the HACS updater
 
 #### Proven some-reconfiguration migration
 
@@ -110,6 +108,67 @@ This is proven to work without any side effects. If you used the default IDs for
 
 1. Remove the Dyson Local and Dyson Cloud _integrations_ from your /config/integrations page.
 1. Remove the Dyson Local and Dyson Cloud _integrations_ from your /hacs/integrations page.
-2. Remove the dyson-ha and dyson-ha-cloud custom repositories from HACS
-3. Add the new [dyson-ha](https://github.com/libdyson-wg/ha-dyson)
-    - If you installed this as a Custom Repository, update the ha-dyson repository using the HACS updater
+1. Remove the dyson-ha and dyson-ha-cloud custom repositories from HACS
+1. Add the new [dyson-ha](https://github.com/libdyson-wg/ha-dyson)
+   - If you installed this as a Custom Repository, update the ha-dyson repository using the HACS updater
+
+## Testing
+
+This integration includes a test suite to ensure code quality and prevent
+regressions. Here's how to run the tests:
+
+### Prerequisites
+
+1. Install test dependencies:
+
+   ```bash
+   pip install pytest pytest-homeassistant-custom-component
+   ```
+
+2. Ensure you have the project structure set up correctly with a `tests/`
+   directory at the root level.
+
+### Running Tests
+
+1. **Run all tests:**
+
+   ```bash
+   python -m pytest
+   ```
+
+2. **Run a specific test file:**
+
+   ```bash
+   python -m pytest tests/test_device_info.py
+   ```
+
+3. **Run tests with verbose output:**
+
+   ```bash
+   python -m pytest -v
+   ```
+
+4. **Run tests with coverage report:**
+
+   ```bash
+   python -m pytest --cov=custom_components.dyson_local --cov-report=term-missing
+   ```
+
+5. **Run a specific test function:**
+
+   ```bash
+   python -m pytest tests/test_device_info.py::TestDysonDeviceInfo::test_from_raw_basic -v
+   ```
+
+### Test Structure
+
+Tests are organized in the `tests/` directory:
+
+```text
+tests/
+├── __init__.py
+└── test_device_info.py
+```
+
+- `__init__.py` - Empty file that marks the tests directory as a Python package
+- `test_device_info.py` - Tests for the device info module
