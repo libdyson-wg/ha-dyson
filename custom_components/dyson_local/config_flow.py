@@ -486,16 +486,91 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         device_type: str,
         name: str,
         host: Optional[str] = None,
-    ) -> Optional[str]:
+    ) -> dict:
         """Try connect and return config entry data."""
-        await self._async_try_connect(serial, credential, device_type, host)
+        final_device_type = await self._async_try_connect_with_fallback(serial, credential, device_type, host)
         return {
             CONF_SERIAL: serial,
             CONF_CREDENTIAL: credential,
-            CONF_DEVICE_TYPE: device_type,
+            CONF_DEVICE_TYPE: final_device_type,  # Use the successful device type (may include fallback)
             CONF_NAME: name,
             CONF_HOST: host,
         }
+
+    async def _async_try_connect_with_fallback(
+        self,
+        serial: str,
+        credential: str,
+        device_type: str,
+        host: Optional[str] = None,
+    ) -> str:
+        """Try connect with variant fallback for base device types."""
+        _LOGGER.debug("Attempting connection with fallback for device_type: %s", device_type)
+        
+        # Try the primary device type first
+        try:
+            await self._async_try_connect(serial, credential, device_type, host)
+            _LOGGER.debug("Primary device type %s succeeded", device_type)
+            return device_type
+        except CannotConnect as primary_error:
+            _LOGGER.debug("Primary device type %s failed, checking for variants", device_type)
+            
+            # Define variant mappings with statistical ordering (most common first)
+            # Based on device type constants and cloud mapping patterns
+            variant_map = {
+                # Pure Cool series (TP04 family)
+                "438": ["438M", "438K", "438E"],  # Pure Cool - 438M most common
+                
+                # Pure Hot+Cool series (HP04 family)  
+                "527": ["527K", "527E"],         # Pure Hot+Cool - 527K most common
+                
+                # Pure Humidify+Cool series (PH01/PH02 family)
+                "358": ["358E", "358K"],         # Pure Humidify+Cool - 358E most common
+                
+                # Pure Cool Link series (TP01/TP02 family) - older models may have variants
+                "475": ["475K", "475E", "475M"],  # Pure Cool Link - try common variants
+                
+                # Pure Cool Link Desk series (DP01/DP02 family)
+                "469": ["469K", "469E", "469M"],  # Pure Cool Link Desk - try common variants
+                
+                # Pure Hot+Cool Link series (HP02 family) - older models may have variants  
+                "455": ["455K", "455E", "455M"],  # Pure Hot+Cool Link - try common variants
+                
+                # Pure Cool Desk series (AM06 family)
+                "520": ["520K", "520E", "520M"],  # Pure Cool Desk - try common variants
+                
+                # Purifier Big+Quiet series (BP02/BP03/BP04 family)
+                "664": ["664K", "664E", "664M"],  # Purifier Big+Quiet - try common variants
+                
+                # Robot vacuum series (less likely to have variants, but for completeness)
+                "N223": ["N223K", "N223E"],      # 360 Eye - try common variants
+                "276": ["276K", "276E"],         # 360 Heurist - try common variants  
+                "277": ["277K", "277E"],         # 360 Vis Nav - try common variants
+            }
+            
+            # Check if this is a base type that has variants
+            variants_to_try = variant_map.get(device_type, [])
+            if not variants_to_try:
+                _LOGGER.debug("No variants available for device_type %s, re-raising original error", device_type)
+                raise primary_error
+            
+            _LOGGER.debug("Trying variants for %s: %s", device_type, variants_to_try)
+            
+            # Try each variant
+            for variant in variants_to_try:
+                try:
+                    _LOGGER.debug("Attempting variant: %s", variant)
+                    await self._async_try_connect(serial, credential, variant, host)
+                    _LOGGER.info("Variant fallback successful: %s -> %s", device_type, variant)
+                    return variant
+                except CannotConnect:
+                    _LOGGER.debug("Variant %s failed, trying next", variant)
+                    continue
+            
+            # If all variants failed, raise the original error
+            _LOGGER.error("All variants failed for device_type %s. Variants tried: %s", 
+                         device_type, variants_to_try)
+            raise primary_error
 
     async def _async_try_connect(
         self,
