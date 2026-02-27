@@ -408,18 +408,40 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    def _resolve_device_type(self, device_info) -> str:
+        """Resolve device type using local mapping with variant support.
+
+        The library's get_device_type() has a bug where variant-specific
+        types (527K, 438M, etc.) get collapsed to base types (527, 438),
+        which breaks MQTT topics. This method uses the local mapping
+        which correctly preserves variants.
+        """
+        product_type = device_info.product_type
+        variant = getattr(device_info, 'variant', None)
+
+        # For base types with a separate variant, try the combined form first
+        if variant and product_type in ("438", "527", "358"):
+            combined = product_type + variant.upper()
+            if combined in CLOUD_PRODUCT_TYPE_TO_DEVICE_TYPE:
+                _LOGGER.debug("Resolved %s + variant %s -> %s", product_type, variant, combined)
+                return CLOUD_PRODUCT_TYPE_TO_DEVICE_TYPE[combined]
+
+        # Direct lookup (handles both base types and already-combined types like "527K")
+        if product_type in CLOUD_PRODUCT_TYPE_TO_DEVICE_TYPE:
+            return CLOUD_PRODUCT_TYPE_TO_DEVICE_TYPE[product_type]
+
+        return None
+
     async def async_step_host(self, info: Optional[dict] = None):
         """Handle step to set host."""
         errors = {}
         if info is not None:
-            # Use the device info's built-in mapping method which handles variants properly
-            device_type = self._device_info.get_device_type()
-            
-            _LOGGER.debug("Cloud ProductType: %s, variant: %s, Mapped to: %s", 
+            # Use local mapping to resolve device type, which correctly
+            # preserves variant-specific types needed for MQTT topics
+            device_type = self._resolve_device_type(self._device_info)
+
+            _LOGGER.debug("Cloud ProductType: %s, variant: %s, Mapped to: %s",
                          self._device_info.product_type, getattr(self._device_info, 'variant', None), device_type)
-            _LOGGER.debug("Device info object has variant attribute: %s", hasattr(self._device_info, 'variant'))
-            if hasattr(self._device_info, 'variant'):
-                _LOGGER.debug("Raw variant value: %r", self._device_info.variant)
             if device_type is None:
                 _LOGGER.error("Unknown device type for ProductType: %s, variant: %s", 
                              self._device_info.product_type, getattr(self._device_info, 'variant', None))
