@@ -45,8 +45,8 @@ SET_TIMER_SCHEMA = {
     vol.Required(ATTR_TIMER): cv.positive_int,
 }
 
-PRESET_MODE_AUTO = "Auto"
-PRESET_MODE_NORMAL = "Normal"
+PRESET_MODE_AUTO = "auto"
+PRESET_MODE_NORMAL = "normal"
 
 SUPPORTED_PRESET_MODES = [PRESET_MODE_AUTO, PRESET_MODE_NORMAL]
 
@@ -87,6 +87,8 @@ async def async_setup_entry(
 
 class DysonFanEntity(DysonEntity, FanEntity):
     """Dyson fan entity base class."""
+
+    _attr_translation_key = "dyson_fan"
 
     _enable_turn_on_off_backwards_compatibility = False
 

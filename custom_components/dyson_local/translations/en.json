@@ -71,5 +71,19 @@
     "abort": {
       "already_configured": "Device already configured"
     }
+  },
+  "entity": {
+    "fan": {
+      "dyson_fan": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "auto": "Auto",
+              "normal": "Normal"
+            }
+          }
+        }
+      }
+    }
   }
 }

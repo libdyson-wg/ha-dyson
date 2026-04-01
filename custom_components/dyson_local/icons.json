@@ -1,0 +1,16 @@
+{
+  "entity": {
+    "fan": {
+      "dyson_fan": {
+        "state_attributes": {
+          "preset_mode": {
+            "default": "mdi:fan",
+            "state": {
+              "auto": "mdi:fan-auto"
+            }
+          }
+        }
+      }
+    }
+  }
+}
