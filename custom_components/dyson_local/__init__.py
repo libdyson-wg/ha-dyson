@@ -22,17 +22,19 @@ from .const import (
     DATA_COORDINATORS,
     DATA_DEVICES,
     DATA_DISCOVERY,
+    DEVICE_TYPE_HUSHJET,
     DOMAIN,
 )
 from libdyson import (
     Dyson360Eye,
     Dyson360Heurist,
     Dyson360VisNav,
+    DysonPureCool,
     DysonPureHotCool,
     DysonPureHotCoolLink,
     DysonPurifierHumidifyCool,
     MessageType,
-    get_device,
+    get_device as _libdyson_get_device,
 )
 from libdyson.cloud import DysonAccount, DysonAccountCN
 from libdyson.discovery import DysonDiscovery
@@ -47,6 +49,27 @@ from libdyson.exceptions import (
 _LOGGER = logging.getLogger(__name__)
 
 ENVIRONMENTAL_DATA_UPDATE_INTERVAL = timedelta(seconds=30)
+
+# Device types not yet in libdyson-neon, mapped to compatible device classes.
+_UNSUPPORTED_DEVICE_TYPE_MAP = {
+    DEVICE_TYPE_HUSHJET: DysonPureCool,
+}
+
+
+def get_device(serial: str, credential: str, device_type: str):
+    """Create a DysonDevice, with fallback for types not yet in libdyson-neon."""
+    device = _libdyson_get_device(serial, credential, device_type)
+    if device is not None:
+        return device
+    cls = _UNSUPPORTED_DEVICE_TYPE_MAP.get(device_type)
+    if cls is not None:
+        _LOGGER.info(
+            "Device type %s not in libdyson-neon; creating %s locally",
+            device_type,
+            cls.__name__,
+        )
+        return cls(serial, credential, device_type)
+    return None
 
 PLATFORMS = ["camera"]
 
@@ -531,11 +554,18 @@ class DysonEntity(Entity):
     @property
     def device_info(self) -> dict:
         """Return device info of the entity."""
+        # Friendly model names for device types not yet in libdyson-neon
+        model_names = {
+            DEVICE_TYPE_HUSHJET: "HushJet Purifier Compact (HJ10)",
+        }
+        model = model_names.get(
+            self._device.device_type, self._device.device_type
+        )
         return {
             "identifiers": {(DOMAIN, self._device.serial)},
             "name": self._name,
             "manufacturer": "Dyson",
-            "model": self._device.device_type,
+            "model": model,
         }
 
 async def _async_register_device_with_discovery(

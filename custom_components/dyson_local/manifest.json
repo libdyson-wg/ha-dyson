@@ -9,5 +9,5 @@
     "iot_class": "local_push",
     "issue_tracker": "https://github.com/libdyson-wg/ha-dyson/issues",
     "requirements": ["libdyson-neon==1.6.0"],
-    "version": "1.7.0"
+    "version": "1.8.0"
 }

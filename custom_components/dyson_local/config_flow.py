@@ -4,7 +4,8 @@ import logging
 import threading
 from typing import Optional
 
-from libdyson import DEVICE_TYPE_NAMES, get_device, get_mqtt_info_from_wifi_info
+from libdyson import DEVICE_TYPE_NAMES as _UPSTREAM_DEVICE_TYPE_NAMES
+from libdyson import get_mqtt_info_from_wifi_info
 from libdyson.cloud import DysonDeviceInfo
 from libdyson.discovery import DysonDiscovery
 from libdyson.exceptions import (
@@ -48,11 +49,18 @@ from homeassistant.components.zeroconf import async_get_instance
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_EMAIL, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL, DOMAIN
+from . import get_device
+from .const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL, DEVICE_TYPE_HUSHJET, DOMAIN
 
 from .cloud.const import CONF_REGION, CONF_AUTH
 
 _LOGGER = logging.getLogger(__name__)
+
+# Extend upstream names with device types handled locally.
+DEVICE_TYPE_NAMES = {
+    **_UPSTREAM_DEVICE_TYPE_NAMES,
+    DEVICE_TYPE_HUSHJET: "HushJet Purifier Compact (HJ10)",
+}
 
 DISCOVERY_TIMEOUT = 10
 
@@ -143,6 +151,11 @@ CLOUD_PRODUCT_TYPE_TO_DEVICE_TYPE = {
     "BP03": DEVICE_TYPE_PURIFIER_BIG_QUIET,
     "BP04": DEVICE_TYPE_PURIFIER_BIG_QUIET,
     "664": DEVICE_TYPE_PURIFIER_BIG_QUIET,
+
+    # HushJet Purifier Compact (HJ10)
+    "897": DEVICE_TYPE_HUSHJET,
+    "HJ10": DEVICE_TYPE_HUSHJET,
+    "M4P": DEVICE_TYPE_HUSHJET,
 }
 
 
@@ -412,16 +425,18 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle step to set host."""
         errors = {}
         if info is not None:
-            # Use the device info's built-in mapping method which handles variants properly
+            # Use the device info's built-in mapping method which handles variants properly.
+            # Fall back to our local mapping for types not yet in libdyson-neon.
             device_type = self._device_info.get_device_type()
-            
-            _LOGGER.debug("Cloud ProductType: %s, variant: %s, Mapped to: %s", 
-                         self._device_info.product_type, getattr(self._device_info, 'variant', None), device_type)
-            _LOGGER.debug("Device info object has variant attribute: %s", hasattr(self._device_info, 'variant'))
-            if hasattr(self._device_info, 'variant'):
-                _LOGGER.debug("Raw variant value: %r", self._device_info.variant)
             if device_type is None:
-                _LOGGER.error("Unknown device type for ProductType: %s, variant: %s", 
+                device_type = CLOUD_PRODUCT_TYPE_TO_DEVICE_TYPE.get(
+                    self._device_info.product_type
+                )
+
+            _LOGGER.debug("Cloud ProductType: %s, variant: %s, Mapped to: %s",
+                         self._device_info.product_type, getattr(self._device_info, 'variant', None), device_type)
+            if device_type is None:
+                _LOGGER.error("Unknown device type for ProductType: %s, variant: %s",
                              self._device_info.product_type, getattr(self._device_info, 'variant', None))
                 errors["base"] = "unknown_device_type"
             else:
