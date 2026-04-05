@@ -12,6 +12,8 @@ from libdyson import (
     DysonBigQuiet,
 )
 
+from .const import DEVICE_TYPE_HUSHJET
+
 from libdyson.const import MessageType
 from libdyson.dyson_device import DysonFanDevice
 
@@ -49,32 +51,44 @@ async def async_setup_entry(
         entities = [DysonBatterySensor(device, name)]
     else:
         coordinator = hass.data[DOMAIN][DATA_COORDINATORS][config_entry.entry_id]
-        entities = [
-            DysonHumiditySensor(coordinator, device, name),
-            DysonTemperatureSensor(coordinator, device, name),
-            DysonVOCSensor(coordinator, device, name),
-        ]
+        is_hushjet = getattr(device, "device_type", None) == DEVICE_TYPE_HUSHJET
 
-        if isinstance(device, DysonPureCoolLink):
-            entities.extend(
-                [
-                    DysonFilterLifeSensor(device, name),
-                    DysonFilterLifeSensorPercentage(device, name),
-                    DysonParticulatesSensor(coordinator, device, name),
-                ]
-            )
+        if is_hushjet:
+            # HushJet only has PM2.5 and PM10 environmental sensors
+            entities = [
+                DysonPM25Sensor(coordinator, device, name),
+                DysonPM10Sensor(coordinator, device, name),
+            ]
         else:
-            if isinstance(device, DysonBigQuiet):
-                if hasattr(device, "carbon_dioxide") and device.carbon_dioxide is not None:
-                    entities.append(DysonCarbonDioxideSensor(coordinator, device, name))
+            entities = [
+                DysonHumiditySensor(coordinator, device, name),
+                DysonTemperatureSensor(coordinator, device, name),
+                DysonVOCSensor(coordinator, device, name),
+            ]
 
-            entities.extend(
-                [
-                    DysonPM25Sensor(coordinator, device, name),
-                    DysonPM10Sensor(coordinator, device, name),
-                    DysonNO2Sensor(coordinator, device, name),
-                ]
-            )
+            if isinstance(device, DysonPureCoolLink):
+                entities.extend(
+                    [
+                        DysonFilterLifeSensor(device, name),
+                        DysonFilterLifeSensorPercentage(device, name),
+                        DysonParticulatesSensor(coordinator, device, name),
+                    ]
+                )
+            else:
+                if isinstance(device, DysonBigQuiet):
+                    if hasattr(device, "carbon_dioxide") and device.carbon_dioxide is not None:
+                        entities.append(DysonCarbonDioxideSensor(coordinator, device, name))
+
+                entities.extend(
+                    [
+                        DysonPM25Sensor(coordinator, device, name),
+                        DysonPM10Sensor(coordinator, device, name),
+                        DysonNO2Sensor(coordinator, device, name),
+                    ]
+                )
+
+        # Filter life sensors — shared across device types
+        if not isinstance(device, DysonPureCoolLink):
             if device.carbon_filter_life is None:
                 entities.append(DysonCombinedFilterLifeSensor(device, name))
             else:

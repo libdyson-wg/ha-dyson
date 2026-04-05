@@ -5,6 +5,8 @@ import math
 from typing import Any, Callable, List, Mapping, Optional
 
 from libdyson import DysonPureCool, DysonPureCoolLink, MessageType
+
+from .const import DEVICE_TYPE_HUSHJET
 import voluptuous as vol
 
 from homeassistant.components.fan import (
@@ -70,7 +72,10 @@ async def async_setup_entry(
     if isinstance(device, DysonPureCoolLink):
         entity = DysonPureCoolLinkEntity(device, name)
     elif isinstance(device, DysonPureCool):
-        entity = DysonPureCoolEntity(device, name)
+        if device.device_type == DEVICE_TYPE_HUSHJET:
+            entity = DysonHushJetEntity(device, name)
+        else:
+            entity = DysonPureCoolEntity(device, name)
     else:  # DysonPurifierHumidifyCool
         entity = DysonPurifierHumidifyCoolEntity(device, name)
     async_add_entities([entity])
@@ -79,7 +84,7 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_SET_TIMER, SET_TIMER_SCHEMA, "set_timer"
     )
-    if isinstance(device, DysonPureCool):
+    if isinstance(device, DysonPureCool) and device.device_type != DEVICE_TYPE_HUSHJET:
         platform.async_register_entity_service(
             SERVICE_SET_ANGLE, SET_ANGLE_SCHEMA, "set_angle"
         )
@@ -250,6 +255,42 @@ class DysonPureCoolEntity(DysonFanEntity):
             self.name,
         )
         self._device.enable_oscillation(angle_low, angle_high)
+
+
+class DysonHushJetEntity(DysonFanEntity):
+    """Dyson HushJet Purifier Compact entity.
+
+    Supports on/off, speed, and preset mode only — no oscillation or direction.
+    """
+
+    _attr_icon = "mdi:air-purifier"
+
+    @property
+    def supported_features(self) -> int:
+        """Flag supported features."""
+        return (
+            FanEntityFeature.SET_SPEED
+            | FanEntityFeature.PRESET_MODE
+            | FanEntityFeature.TURN_ON
+            | FanEntityFeature.TURN_OFF
+        )
+
+    def set_percentage(self, percentage: int) -> None:
+        """Set the speed percentage of the fan.
+
+        Sends speed and auto=OFF in a single MQTT command to avoid
+        the second command resetting the speed on the HushJet.
+        """
+        if percentage == 0:
+            self._device.turn_off()
+            return
+        dyson_speed = math.ceil(percentage_to_ranged_value(SPEED_RANGE, percentage))
+        self._device._set_configuration(
+            fpwr="ON", fnsp=f"{dyson_speed:04d}", auto="OFF"
+        )
+
+    def oscillate(self, oscillating: bool) -> None:
+        """Not supported on HushJet."""
 
 
 class DysonPurifierHumidifyCoolEntity(DysonFanEntity):
