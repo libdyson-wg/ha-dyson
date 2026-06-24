@@ -4,7 +4,7 @@ import logging
 import math
 from typing import Any, Callable, List, Mapping, Optional
 
-from libdyson import DysonPureCool, DysonPureCoolLink, MessageType
+from .vendor.libdyson import DysonPureCool, DysonPureCoolLink, MessageType
 import voluptuous as vol
 
 from homeassistant.components.fan import (
@@ -51,6 +51,20 @@ PRESET_MODE_NORMAL = "Normal"
 SUPPORTED_PRESET_MODES = [PRESET_MODE_AUTO, PRESET_MODE_NORMAL]
 
 SPEED_RANGE = (1, 10)
+
+# Oscillation angle constraints, matching what the Dyson app enforces.
+# Individual angles must be within MIN-MAX. When sweeping (angle_low != angle_high),
+# the sweep width must be within MIN_SWEEP-MAX_SWEEP.
+MIN_OSCILLATION_ANGLE = 5
+MAX_OSCILLATION_ANGLE = 355
+MIN_OSCILLATION_SWEEP = 45
+MAX_OSCILLATION_SWEEP = 350
+
+# Default angle range used when oscillation is enabled via the standard
+# fan.oscillate service but the stored angles are invalid (e.g. equal,
+# or outside the valid sweep window). 90 degree sweep centered ahead.
+DEFAULT_OSCILLATION_ANGLE_LOW = 135
+DEFAULT_OSCILLATION_ANGLE_HIGH = 225
 
 COMMON_FEATURES = (
     FanEntityFeature.OSCILLATE
@@ -179,10 +193,33 @@ class DysonFanEntity(DysonEntity, FanEntity):
         return self._device.turn_off()
 
     def oscillate(self, oscillating: bool) -> None:
-        """Turn on/of oscillation."""
+        """Turn on/off oscillation."""
         _LOGGER.debug("Turn oscillation %s for device %s", oscillating, self.name)
         if oscillating:
-            self._device.enable_oscillation()
+            angle_low = getattr(self._device, "oscillation_angle_low", None)
+            angle_high = getattr(self._device, "oscillation_angle_high", None)
+
+            # Angle-capable fans need oson + ancp + osal + osau sent together.
+            # Sending oson alone causes the fan to start oscillating then bail.
+            if angle_low is not None and angle_high is not None:
+                sweep = angle_high - angle_low
+                if sweep < MIN_OSCILLATION_SWEEP or sweep > MAX_OSCILLATION_SWEEP:
+                    _LOGGER.debug(
+                        "Stored oscillation range (%s-%s, %s degree sweep) is "
+                        "outside the %s-%s degree valid range; using default %s degree sweep",
+                        angle_low,
+                        angle_high,
+                        sweep,
+                        MIN_OSCILLATION_SWEEP,
+                        MAX_OSCILLATION_SWEEP,
+                        DEFAULT_OSCILLATION_ANGLE_HIGH - DEFAULT_OSCILLATION_ANGLE_LOW,
+                    )
+                    angle_low = DEFAULT_OSCILLATION_ANGLE_LOW
+                    angle_high = DEFAULT_OSCILLATION_ANGLE_HIGH
+                self._device.enable_oscillation(angle_low, angle_high)
+            else:
+                # Pure Cool Link models do not support angle bounds
+                self._device.enable_oscillation()
         else:
             self._device.disable_oscillation()
 
@@ -249,6 +286,36 @@ class DysonPureCoolEntity(DysonFanEntity):
             angle_high,
             self.name,
         )
+
+        # Position bounds apply to both angles regardless of mode
+        if not MIN_OSCILLATION_ANGLE <= angle_low <= MAX_OSCILLATION_ANGLE:
+            raise ValueError(
+                f"angle_low must be between {MIN_OSCILLATION_ANGLE} and "
+                f"{MAX_OSCILLATION_ANGLE} (got {angle_low})"
+            )
+        if not MIN_OSCILLATION_ANGLE <= angle_high <= MAX_OSCILLATION_ANGLE:
+            raise ValueError(
+                f"angle_high must be between {MIN_OSCILLATION_ANGLE} and "
+                f"{MAX_OSCILLATION_ANGLE} (got {angle_high})"
+            )
+
+        # Sweep width only applies when actually sweeping (low != high).
+        # Equal angles set the fan to a fixed position with oscillation off.
+        if angle_low != angle_high:
+            sweep = angle_high - angle_low
+            if sweep < MIN_OSCILLATION_SWEEP:
+                raise ValueError(
+                    f"Oscillation sweep too narrow ({sweep} degrees). Minimum "
+                    f"is {MIN_OSCILLATION_SWEEP} degrees, or set "
+                    f"angle_low == angle_high to point the fan at a fixed "
+                    f"position without oscillating."
+                )
+            if sweep > MAX_OSCILLATION_SWEEP:
+                raise ValueError(
+                    f"Oscillation sweep too wide ({sweep} degrees). Maximum "
+                    f"is {MAX_OSCILLATION_SWEEP} degrees."
+                )
+
         self._device.enable_oscillation(angle_low, angle_high)
 
 
