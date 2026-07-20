@@ -1,13 +1,16 @@
 """Binary sensor platform for dyson."""
 
-from typing import Callable
+from typing import Callable, Optional
 
 from libdyson import (
     Dyson360Eye,
     Dyson360Heurist,
     Dyson360VisNav,
     DysonPureHotCoolLink,
+    DysonPurifierHumidifyCool,
+    MessageType,
 )
+from libdyson.dyson_device import DysonFanDevice
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -49,6 +52,10 @@ async def async_setup_entry(
         )
     if isinstance(device, DysonPureHotCoolLink):
         entities.extend([DysonPureHotCoolLinkTiltSensor(device, name)])
+    if isinstance(device, DysonFanDevice):
+        entities.append(DysonFilterReplacementSensor(device, name))
+    if isinstance(device, DysonPurifierHumidifyCool):
+        entities.append(DysonWaterTankEmptySensor(device, name))
     async_add_entities(entities)
 
 
@@ -150,3 +157,51 @@ class DysonPureHotCoolLinkTiltSensor(DysonEntity, BinarySensorEntity):
     def sub_unique_id(self):
         """Return the sensor's unique id."""
         return "tilt"
+
+
+class DysonFilterReplacementSensor(DysonEntity, BinarySensorEntity):
+    """Dyson filter replacement fault sensor."""
+
+    _MESSAGE_TYPE = MessageType.FAULT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_device_class = BinarySensorDeviceClass.PROBLEM
+    _attr_icon = "mdi:air-filter"
+
+    @property
+    def is_on(self) -> Optional[bool]:
+        """Return if the filter needs replacing."""
+        return self._device.filter_replacement_required
+
+    @property
+    def sub_name(self) -> str:
+        """Return the name of the sensor."""
+        return "Filter Replacement"
+
+    @property
+    def sub_unique_id(self):
+        """Return the sensor's unique id."""
+        return "filter_replacement"
+
+
+class DysonWaterTankEmptySensor(DysonEntity, BinarySensorEntity):
+    """Dyson humidifier water tank empty sensor."""
+
+    _MESSAGE_TYPE = MessageType.FAULT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_device_class = BinarySensorDeviceClass.PROBLEM
+    _attr_icon = "mdi:water-alert"
+
+    @property
+    def is_on(self) -> Optional[bool]:
+        """Return if the water tank is empty."""
+        return self._device.water_tank_empty
+
+    @property
+    def sub_name(self) -> str:
+        """Return the name of the sensor."""
+        return "Water Tank Empty"
+
+    @property
+    def sub_unique_id(self):
+        """Return the sensor's unique id."""
+        return "water_tank_empty"

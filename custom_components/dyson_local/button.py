@@ -11,6 +11,8 @@ from .const import DATA_COORDINATORS, DATA_DEVICES, DOMAIN
 
 from . import DysonEntity, DysonDevice
 
+from libdyson.dyson_device import DysonFanDevice
+
 import logging
 
 _LOGGER = logging.getLogger(__name__)
@@ -26,7 +28,7 @@ async def async_setup_entry(
 
     entities = []
 
-    if hasattr(device, "filter_life"):
+    if isinstance(device, DysonFanDevice):
         entities.append(DysonFilterResetButton(device, name))
 
     async_add_entities(entities)
