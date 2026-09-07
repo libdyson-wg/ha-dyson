@@ -34,7 +34,6 @@ SUPPORTED_FEATURES = (
     | VacuumEntityFeature.FAN_SPEED
     | VacuumEntityFeature.STATUS
     | VacuumEntityFeature.STATE
-    | VacuumEntityFeature.BATTERY
 )
 
 DYSON_STATUS = {
