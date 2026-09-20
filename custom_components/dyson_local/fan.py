@@ -42,7 +42,7 @@ SET_ANGLE_SCHEMA = {
 }
 
 SET_TIMER_SCHEMA = {
-    vol.Required(ATTR_TIMER): cv.positive_int,
+    vol.Required(ATTR_TIMER): vol.All(vol.Coerce(int), vol.Range(min=0, max=540)),
 }
 
 PRESET_MODE_AUTO = "Auto"
