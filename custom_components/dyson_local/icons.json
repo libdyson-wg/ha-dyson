@@ -1,0 +1,20 @@
+{
+  "entity": {
+    "fan": {
+      "dyson": {
+        "state": {
+          "off": "pap:power_button"
+        },
+        "state_attributes": {
+          "preset_mode": {
+            "default": "pap:mode",
+            "state": {
+              "Auto": "pap:auto_mode_button",
+              "Normal": "mdi:auto-mode"
+            }
+          }
+        }
+      }
+    }
+  }
+}

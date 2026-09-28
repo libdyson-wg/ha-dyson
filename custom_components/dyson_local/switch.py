@@ -2,7 +2,7 @@
 
 from typing import Callable
 
-from libdyson import DysonPureHotCoolLink
+from libdyson import DysonBigQuiet, DysonPureHotCoolLink
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -23,7 +23,10 @@ async def async_setup_entry(
     entities = [
         DysonNightModeSwitchEntity(device, name),
         DysonContinuousMonitoringSwitchEntity(device, name),
+        DysonAutoModeSwitchEntity(device, name),
     ]
+    if not isinstance(device, DysonBigQuiet):
+        entities.append(DysonOscillationSwitchEntity(device, name))
     if isinstance(device, DysonPureHotCoolLink):
         entities.append(DysonFocusModeSwitchEntity(device, name))
     async_add_entities(entities)
@@ -95,6 +98,70 @@ class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
     def turn_off(self):
         """Turn off continuous monitoring."""
         return self._device.disable_continuous_monitoring()
+
+
+class DysonAutoModeSwitchEntity(DysonEntity, SwitchEntity):
+    """Dyson fan auto mode switch."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_icon = "mdi:fan-auto"
+
+    @property
+    def sub_name(self):
+        """Return the name of the entity."""
+        return "Auto Mode"
+
+    @property
+    def sub_unique_id(self):
+        """Return the unique id of the entity."""
+        return "auto_mode"
+
+    @property
+    def is_on(self):
+        """Return if auto mode is on."""
+        return self._device.auto_mode
+
+    def turn_on(self):
+        """Turn on auto mode."""
+        return self._device.enable_auto_mode()
+
+    def turn_off(self):
+        """Turn off auto mode."""
+        return self._device.disable_auto_mode()
+
+
+class DysonOscillationSwitchEntity(DysonEntity, SwitchEntity):
+    """Dyson fan oscillation switch."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    @property
+    def sub_name(self):
+        """Return the name of the entity."""
+        return "Oscillation"
+
+    @property
+    def sub_unique_id(self):
+        """Return the unique id of the entity."""
+        return "oscillation"
+
+    @property
+    def icon(self):
+        """Return the icon of the entity."""
+        return "mdi:arrow-oscillating" if self.is_on else "mdi:arrow-oscillating-off"
+
+    @property
+    def is_on(self):
+        """Return if oscillation is on."""
+        return self._device.oscillation
+
+    def turn_on(self):
+        """Turn on oscillation."""
+        return self._device.enable_oscillation()
+
+    def turn_off(self):
+        """Turn off oscillation."""
+        return self._device.disable_oscillation()
 
 
 class DysonFocusModeSwitchEntity(DysonEntity, SwitchEntity):

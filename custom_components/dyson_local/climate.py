@@ -46,6 +46,11 @@ async def async_setup_entry(
 class DysonClimateEntity(DysonEntity, ClimateEntity):
     """Dyson climate entity base class."""
 
+    # current_temperature and current_humidity arrive on ENVIRONMENTAL messages, but the
+    # DysonEntity base class filters on MessageType.STATE, so those attributes were only
+    # refreshed when the mode or target temperature changed. None = every message type.
+    _MESSAGE_TYPE = None
+
     _enable_turn_on_off_backwards_compatibility = False
 
     @property
