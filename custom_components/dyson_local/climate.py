@@ -85,12 +85,12 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
         self._device.turn_off()
 
     @property
-    def temperature_unit(self) -> str:
+    def native_temperature_unit(self) -> str:
         """Return the unit of measurement."""
         return UnitOfTemperature.CELSIUS
 
     @property
-    def target_temperature(self) -> int:
+    def native_target_temperature(self) -> int:
         """Return the target temperature."""
         return self._device.heat_target - 273
 
@@ -100,12 +100,31 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
         return self._device.temperature
 
     @property
-    def current_temperature(self) -> Optional[int]:
+    def native_current_temperature(self) -> Optional[float]:
         """Return the current temperature."""
         temperature_kelvin = self._current_temperature_kelvin
         if isinstance(temperature_kelvin, str):
             return None
         return float(f"{(temperature_kelvin - 273.15):.1f}")
+
+    # Home Assistant 2026.11 renamed these to native_*. On older cores,
+    # serve the old names from the new ones so the entity keeps working.
+    if not hasattr(ClimateEntity, "native_temperature_unit"):
+
+        @property
+        def temperature_unit(self) -> str:
+            """Return the unit of measurement (pre-2026.11 cores)."""
+            return self.native_temperature_unit
+
+        @property
+        def target_temperature(self) -> int:
+            """Return the target temperature (pre-2026.11 cores)."""
+            return self.native_target_temperature
+
+        @property
+        def current_temperature(self) -> Optional[float]:
+            """Return the current temperature (pre-2026.11 cores)."""
+            return self.native_current_temperature
 
     @environmental_property
     def current_humidity(self) -> int:
